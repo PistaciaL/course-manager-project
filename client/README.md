@@ -1,4 +1,4 @@
-# course-management-project
+# course-management-project-vue2
 
 ## Project setup
 ```

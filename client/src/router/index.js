@@ -1,25 +1,64 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import Vue from 'vue'
+import VueRouter from 'vue-router'
+import store from '../store/index'
+import Home from '@/views/Home'
+import Login from '@/views/Login'
+import Register from '@/views/Register'
 
-const routes = [
-  {
+Vue.use(VueRouter)
+
+const routes = [{
     path: '/',
+    name: 'index',
+    component: Home
+}, {
+    path: '/login',
+    name: 'login',
+    component: Login
+}, {
+    path: '/register',
+    name: 'register',
+    component: Register
+}, {
+    path: '/home',
     name: 'home',
-    component: HomeView
-  },
-  {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  }
-]
+    component: Home,
+    redirect: '/',
+    children: [{
+        path: 'page1',
+        component: () =>
+            import ("@/views/Page1")
+    }, {
+        path: 'page2',
+        component: () =>
+            import ("@/views/Page2")
+    }]
+}]
 
-const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
-  routes
+const router = new VueRouter({
+    mode: 'history',
+    base: process.env.BASE_URL,
+    routes
 })
 
-export default router
+// router.beforeEach((to, from, next) => {
+//     console.log(to)
+//     console.log(from)
+//     console.log(next)
+//     next()
+// })
+
+// router.beforeResolve((to, from, next) => {
+//     if (to.fullPath != '/login' && !store.state.userInfo.isLogin) {
+//         next('login')
+//     } else {
+//         next()
+//     }
+// })
+const originalPush = VueRouter.prototype.push
+
+VueRouter.prototype.push = function push(location) {
+    return originalPush.call(this, location).catch(err => err)
+}
+
+export default router;
