@@ -3,9 +3,10 @@
     <el-form-item class="form-item" prop="phone">
       <el-input v-model="form.phone" placeholder="请输入手机号" oninput="value=value.replace(/[^\d]/g,'')"></el-input>
     </el-form-item>
-    <el-form-item class="form-item" prop="verificationCode">
-      <el-input v-model="form.verificationCode"  placeholder="请输入验证码" class="verification-input"></el-input>
-      <el-button @click="reGetVerificationCode" :disabled="btnDisabled" class="verification-btn">{{btnContainer}}</el-button>
+    <el-form-item class="form-item" prop="vCode">
+      <el-input v-model="form.vCode" placeholder="请输入验证码" class="verification-input"></el-input>
+      <el-button @click="reGetVerificationCode" :disabled="btnDisabled" class="verification-btn">{{ btnContainer }}
+      </el-button>
     </el-form-item>
     <div class="register-link">
       <el-link href="/register">去注册 &gt;</el-link>
@@ -19,32 +20,32 @@
 <script>
 var that;
 export default {
-  data(){
+  data() {
     const checkPhone = (rule, value, callback) => {
       var pattern = /^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/;
-      if(value==null || value=='' || value === undefined){
+      if (value == null || value == '' || value === undefined) {
         callback()
       } else {
-        if(!pattern.test(value)){
+        if (!pattern.test(value)) {
           callback(new Error('请输入正确手机号'))
         } else {
           callback()
         }
       }
     }
-    return{
+    return {
       form: {
         phone: '',
-        verificationCode: ''
+        vCode: ''
       },
       rules: {
         phone: [
-          {required: true, message: '请输入手机号', trigger: 'blur'},
-          {validator: checkPhone, trigger: 'blur'}
+          { required: true, message: '请输入手机号', trigger: 'blur' },
+          { validator: checkPhone, trigger: 'blur' }
         ],
-        verificationCode: [
-          {required: true, message: '请输入验证码', trigger: 'blur'},
-          {len: 6, message: '请输入正确验证码', trigger: 'blur'}
+        vCode: [
+          { required: true, message: '请输入验证码', trigger: 'blur' },
+          { len: 6, message: '请输入正确验证码', trigger: 'blur' }
         ]
       },
       btnContainer: '发送验证码',
@@ -53,58 +54,59 @@ export default {
     }
   },
   methods: {
-    onSubmit(){
+    onSubmit() {
       this.$refs.form.validate((valid) => {
         if (valid) {
-          console.log("submit")
+          console.log("手机号登录")
         } else {
-          return false;
+          return false; 
         }
       });
     },
-    reGetVerificationCode(){
+    reGetVerificationCode() {
       this.btnContainer = '60'
-      this.isSend = true,
+      this.isSend = true
       this.btnDisabled = true
       this.changeBtnText()
+      console.log("验证码发送")
     },
-    changeBtnText(){
-      setTimeout(()=>{
-        if(that.btnContainer == '发送验证码'){
+    changeBtnText() {
+      setTimeout(() => {
+        if (that.btnContainer == '发送验证码') {
           that.btnContainer = 59
           that.changeBtnText()
         } else {
-          that.btnContainer = that.btnContainer-1
-          if(that.btnContainer != -1){
+          that.btnContainer = that.btnContainer - 1
+          if (that.btnContainer != -1) {
             that.changeBtnText()
           } else {
             that.btnContainer = '发送验证码'
             that.isSend = false
             this.verifyPhone(this.form.phone)
-            
+
           }
         }
       }, 1000)
     },
-    verifyPhone(newValue){
+    verifyPhone(newValue) {
       var pattern = /^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/;
-        if(this.isSend == false && pattern.test(newValue)){
-          this.btnDisabled = false;
-        } else {
-          this.btnDisabled = true;
-        }
+      if (this.isSend == false && pattern.test(newValue)) {
+        this.btnDisabled = false;
+      } else {
+        this.btnDisabled = true;
+      }
     }
   },
   watch: {
-    'form.phone':{
-      handler(newValue){
+    'form.phone': {
+      handler(newValue) {
         this.verifyPhone(newValue)
       },
       deep: true,
       immediate: true
     }
   },
-  mounted(){
+  mounted() {
     that = this;
   }
 }
@@ -115,30 +117,36 @@ export default {
   margin: 40px auto;
   width: 70%;
 }
+
 .form-item {
-  margin: 40px auto 0;
+  margin: 55px auto 0;
 }
-.form-item-submit{
+
+.form-item-submit {
   margin-top: 50px;
 }
-.btn-login{
+
+.btn-login {
   margin: 0 auto;
-  display: block;
-  padding: 16px 160px;
+  padding: 16px 119px;
 }
-.checkbox-container{
+
+.checkbox-container {
   width: 80%;
   margin-top: 20px;
   padding-left: 50%
 }
-.verification-input{
-  width: 258px;
+
+.verification-input {
+  width: 139px;
   margin-right: 15px;
 }
-.verification-btn{
+
+.verification-btn {
   width: 112px;
 }
-.register-link{
+
+.register-link {
   float: right;
   margin-right: 30px;
   margin-top: 15px;

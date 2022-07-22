@@ -53,14 +53,14 @@ export default {
     onSubmit(){
       this.$refs.form.validate((valid) => {
         if (valid) {
-          console.log("submit")
+          console.log("账号密码登录")
         } else {
           return false;
         }
       });
     },
     reGetVerificationCode(){
-      console.log("reget verification code")
+      console.log("重新获取验证码")
     }
   }
 }
@@ -68,35 +68,34 @@ export default {
 
 <style scoped>
 .form {
-  margin: 40px auto;
+  margin: 20px auto;
   width: 70%;
 }
 .form-item {
-  margin: 40px auto 0;
+  margin: 19px auto 0;
 }
 .form-item-submit{
-  margin-top: 20px;
+  margin-top: 12px;
 }
 .form-item-checkbox{
-  margin: 10px 5%;
+  margin: 10px 10px;
 }
-.btn-login{
+.btn-login {
   margin: 0 auto;
-  display: block;
-  padding: 16px 160px;
+  padding: 16px 119px;
 }
 .verification-code{
   height: 40px;
-  width: 100px;
+  width: 112px;
   float: right
 }
-.verification-input{
-  width: 270px;
+.verification-input {
+  width: 139px;
   margin-right: 15px;
 }
 .register-link{
   display: block;
   float:right;
-  margin-top: -37px;
+  margin-top: -41px;
 }
 </style>

@@ -1,15 +1,16 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import store from '../store/index'
-import Home from '@/views/Home'
+import store from '@/store/index'
+import Back from '@/views/Back'
 import Login from '@/views/Login'
 import Register from '@/views/Register'
+import Home from '@/views/Home'
 
 Vue.use(VueRouter)
 
 const routes = [{
     path: '/',
-    name: 'index',
+    name: 'home',
     component: Home
 }, {
     path: '/login',
@@ -20,10 +21,9 @@ const routes = [{
     name: 'register',
     component: Register
 }, {
-    path: '/home',
-    name: 'home',
-    component: Home,
-    redirect: '/',
+    path: '/back',
+    name: 'back',
+    component: Back,
     children: [{
         path: 'page1',
         component: () =>
@@ -48,13 +48,15 @@ const router = new VueRouter({
 //     next()
 // })
 
-// router.beforeResolve((to, from, next) => {
-//     if (to.fullPath != '/login' && !store.state.userInfo.isLogin) {
-//         next('login')
-//     } else {
-//         next()
-//     }
-// })
+router.beforeResolve((to, from, next) => {
+    if ((to.fullPath == '/' || to.fullPath.substr(0, 5) == '/back') && !store.state.userInfo.isLogin) {
+        next('/login')
+    } else if ((to.fullPath == '/login' || to.fullPath == '/register') && store.state.userInfo.isLogin) {
+        next('/')
+    } else {
+        next()
+    }
+})
 const originalPush = VueRouter.prototype.push
 
 VueRouter.prototype.push = function push(location) {

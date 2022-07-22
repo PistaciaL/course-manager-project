@@ -1,15 +1,15 @@
 <template>
-  <el-form ref="form" :model="form" label-width="100px" :rules="rules">
-    <el-form-item label="学工号" prop="number">
+  <el-form ref="form" :model="form" label-width="150px" :rules="rules" class="form">
+    <el-form-item label="请输入学工号" prop="number" class="form-item">
       <el-input
         v-model="form.number"
         oninput="value=value.replace(/[^\d]/g,'')"
       ></el-input>
     </el-form-item>
-    <el-form-item label="真实姓名" prop="name">
+    <el-form-item label="请输入真实姓名" prop="name" class="form-item">
       <el-input v-model="form.name"></el-input>
     </el-form-item>
-    <el-form-item label="证件类型" prop="documentType">
+    <el-form-item label="请输入证件类型" prop="documentType" class="form-item">
       <el-select v-model="form.documentType" placeholder="请选择">
         <el-option
           v-for="item in documentTypeList"
@@ -20,11 +20,11 @@
         </el-option>
       </el-select>
     </el-form-item>
-    <el-form-item label="证件号" prop="documentNumb">
+    <el-form-item label="证件号" prop="documentNumb" class="form-item">
       <el-input v-model="form.documentNumb"></el-input>
     </el-form-item>
-    <el-form-item>
-      <el-button type="primary" plain @click="nextStep">下一步</el-button>
+    <el-form-item class="form-item">
+      <el-button type="primary" plain @click="nextStep" class="next-step-btn">下一步</el-button>
       <span class="other-option">
         <el-link href="/login">已有账号，去登陆</el-link>
       </span>
@@ -99,11 +99,7 @@ export default {
         ],
         name: [
           { required: true, message: "请输入姓名", trigger: "blur" },
-          {
-            validator: verifyName,
-            message: "请输入正确的姓名",
-            trigger: "blur",
-          },
+          { validator: verifyName, message: "请输入正确的姓名", trigger: "blur" },
         ],
         documentType: [
           { required: true, message: "请选择证件类型", trigger: "change" },
@@ -115,7 +111,7 @@ export default {
       },
       documentTypeList: [
         { value: 1, label: "身份证" },
-        { value: 2, label: "护照" },
+        { value: 2, label: "其他" },
       ],
     };
   },
@@ -123,7 +119,7 @@ export default {
     nextStep() {
       this.$refs.form.validate((valid) => {
         if (valid) {
-          console.log("nextstep");
+          console.log("验证学工号");
           this.$parent.stepActive = 1;
         } else {
           return false;
@@ -135,7 +131,13 @@ export default {
 </script>
 
 <style>
+.form-item{
+  margin: 30px auto;
+}
 .other-option {
-  margin-left: 40px;
+  margin-left: 30px;
+}
+.next-step-btn{
+  width: 155px;
 }
 </style>
