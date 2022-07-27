@@ -1,11 +1,37 @@
 <template>
   <div class="header">
     <div class="left-operation word-v-middle">
-      <div class="logo" @click="gotoHome">
-        <h1 style="color:#409EFF">LOGO</h1>
+      <div class="logo" @click="gotoHomeOrBack">
+        <h1 style="color: #409eff">LOGO</h1>
       </div>
     </div>
     <div class="right-flex">
+      <el-button
+        @click="
+          userInfo.identity = userInfo.identity == '学生' ? '教师' : '学生'
+        "
+        size="small"
+        style="float: right"
+        >测试用:修改身份,当前身份:{{ userInfo.identity }}</el-button
+      >
+      <el-button
+        @click="
+          userInfo.permission =
+            userInfo.permission == '院级管理员'
+              ? '校级管理员'
+              : userInfo.permission == '校级管理员'
+              ? '普通用户'
+              : '院级管理员'
+        "
+        size="small"
+        style="float: right"
+        >测试用:修改权限,当前权限:{{
+          userInfo.permission == "普通用户"
+            ? "普通用户---"
+            : userInfo.permission
+        }}</el-button
+      >
+
       <div
         class="operation-item"
         :class="{ 'operation-item-mouseover': mouseOver == 'notice' }"
@@ -34,7 +60,10 @@
               ><el-divider direction="vertical"></el-divider
               ><span>{{ notice.content }}</span>
             </el-dropdown-item>
-            <el-dropdown-item divided command="moreNotice" class="divided-dropdown-item"
+            <el-dropdown-item
+              divided
+              command="moreNotice"
+              class="divided-dropdown-item"
               >更多通知</el-dropdown-item
             >
           </el-dropdown-menu>
@@ -54,7 +83,7 @@
               :src="userInfo.avatarUrl"
               class="avatar"
             >
-              {{ userInfo.userName.slice(0, 2) }}
+              {{ userInfo.name.slice(0, 2) }}
             </el-avatar>
           </div>
 
@@ -97,8 +126,12 @@ export default {
     setMouseOver(str) {
       this.mouseOver = str;
     },
-    gotoHome() {
-      this.$router.push("/");
+    gotoHomeOrBack() {
+      if (this.$router.currentRoute.fullPath == "/") {
+        this.$router.push("/back");
+      } else {
+        this.$router.push("/");
+      }
     },
     logout() {
       this.$store.state.userInfo = { isLogin: false };
@@ -107,11 +140,16 @@ export default {
     handleAvatarCommand(command) {
       if (command == "logout") {
         this.logout();
+      } else if (command == "myInfo") {
+        this.$router.push("/back/info");
       } else {
         console.log(command);
       }
     },
     handleNoticeCommand(command) {
+      if (command == "moreNotice") {
+        this.$router.push("/back/notice");
+      }
       console.log(command);
     },
   },
@@ -185,7 +223,7 @@ export default {
   height: 100%;
   width: 100%;
 }
-.divided-dropdown-item{
+.divided-dropdown-item {
   text-align: center;
 }
 </style>

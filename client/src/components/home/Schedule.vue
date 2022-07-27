@@ -25,7 +25,7 @@
         <tbody>
           <tr v-for="schedule in schedules" :key="schedule==''?null:null">
             <th :rowspan="schedule.hour" v-if="schedule.hour!=1" class="schedule-table-left-head">{{ schedule.type}}</th>
-            <th
+            <td
               v-for="course in notnull(schedule.courses)"
               :key="course == '' ? null : null"
               :class="{ 'schedule-table-has-course': course != '' }"
@@ -33,7 +33,7 @@
             >
               <p>{{ course.name }}</p>
               <p>{{ course.room }}</p>
-            </th>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -138,18 +138,18 @@ export default {
 .schedule-table {
   width: 100%;
 }
-.schedule-table th {
+.schedule-table th,td {
   height: 50px;
   font-weight: 300;
 }
-.schedule-table thead th{
+.schedule-table th{
   border-left: 1px Solid #e6e6e6;
   font-size: 20px;
 }
 .schedule-table thead th:first-child{
   border-left: 0;
 }
-.schedule-table tbody th {
+.schedule-table tbody th,td {
   border: 1px Solid #e6e6e6;
   border-bottom: 0;
   border-right: 0;

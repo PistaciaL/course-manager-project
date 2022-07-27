@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://43.142.36.30:5432/postgres
+    url: jdbc:postgresql://43.142.36.30:5432/course_system
     name: postgres
     password: postgres
 mybatis-plus:

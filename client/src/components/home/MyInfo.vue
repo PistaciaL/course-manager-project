@@ -13,7 +13,7 @@
                 class="my-info-avatar"
                 shape="square"
               >
-                {{ userInfo.userName.slice(0, 2) }}
+                {{ userInfo.name.slice(0, 2) }}
               </el-avatar>
             </div>
             <div class="my-info-content-item">

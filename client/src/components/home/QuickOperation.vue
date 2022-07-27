@@ -4,16 +4,20 @@
       <span>快速入口</span>
     </div>
     <el-divider></el-divider>
-    <div class="operation-content-body">
-      <div
-        class="operation-item"
-        v-for="item in showOperationItems"
-        :key="item.name"
-      >
-        <el-image :src="item.url"></el-image>
-        <span>{{ item.name }}</span>
+    <transition name="el-zoom-in-top">
+      <div class="operation-content-body">
+        <div
+          class="operation-item"
+          v-for="item in showOperationItems"
+          :key="item.name"
+          @click="goto(item.url)"
+        >
+          <el-image :src="item.src"></el-image>
+          <span>{{ item.name }}</span>
+        </div>
+        <div class="operation-item" v-for="i in 6-showOperationItems.length" :key="i"></div>
       </div>
-    </div>
+    </transition>
     <div class="operation-content-footer btn-group">
       <el-button
         circle
@@ -37,122 +41,94 @@ export default {
           identity: ["学生", "教师"],
           permission: ["院级管理员", "校级管理员"],
           src: "",
-          url: "",
+          url: "/back/notice",
         },
         {
-          name: "个人信息",
+          name: "个人资料",
           identity: ["学生", "教师"],
           permission: ["院级管理员", "校级管理员"],
           src: "",
-          url: "",
+          url: "/back/info",
         },
-
         {
-          name: "我的学业",
-          identity: ["学生"],
-          permission: [],
+          name: "我的课程",
+          identity: ["学生", "教师"],
           src: "",
-          url: "",
+          url: "/back/course",
         },
         {
           name: "我的选课",
           identity: ["学生"],
-          permission: [],
           src: "",
-          url: "",
+          url: "/back/select",
         },
         {
           name: "我的考试",
-          identity: ["学生"],
-          permission: [],
+          identity: ["学生", "教师"],
           src: "",
-          url: "",
+          url: "/back/exam",
         },
         {
           name: "学业指导计划",
           identity: ["学生"],
           permission: ["院级管理员"],
           src: "",
-          url: "",
-        },
-
-        {
-          name: "我的课程",
-          identity: ["教师"],
-          permission: [],
-          src: "",
-          url: "",
+          url: "/back/guide",
         },
         {
-          name: "申请处理",
+          name: "我的申请",
           identity: ["教师"],
           permission: ["院级管理员", "校级管理员"],
           src: "",
-          url: "",
+          url: "/back/apply",
         },
-
         {
           name: "用户管理",
-          identity: [],
           permission: ["院级管理员", "校级管理员"],
           src: "",
-          url: "",
-        },
-        {
-          name: "学工号管理",
-          identity: [],
-          permission: ["校级管理员"],
-          src: "",
-          url: "",
+          url: "/back/usermng",
         },
         {
           name: "教室管理",
-          identity: [],
           permission: ["校级管理员"],
           src: "",
-          url: "",
+          url: "/back/roommng",
         },
         {
           name: "课程管理",
-          identity: [],
           permission: ["院级管理员", "校级管理员"],
           src: "",
-          url: "",
+          url: "/back/coursemng",
         },
         {
           name: "学期管理",
-          identity: [],
           permission: ["校级管理员"],
           src: "",
-          url: "",
+          url: "/back/termmng",
         },
         {
           name: "科目管理",
-          identity: [],
           permission: ["院级管理员", "校级管理员"],
           src: "",
-          url: "",
+          url: "/back/subjectmng",
         },
         {
           name: "选课系统管理",
-          identity: [],
           permission: ["校级管理员"],
           src: "",
-          url: "",
+          url: "/back/selectmng",
         },
         {
           name: "学院及专业",
-          identity: [],
           permission: ["院级管理员", "校级管理员"],
           src: "",
-          url: "",
+          url: "/back/collegemng",
         },
         {
           name: "统计日志",
-          identity: [],
           permission: ["院级管理员", "校级管理员"],
           src: "",
-          url: "",
+          url: "/back/totalmng",
         },
       ],
       showOperationItems: [],
@@ -173,7 +149,7 @@ export default {
       const pageSize = 6;
       var items = new Array();
       for (const key in this.allOperationItems) {
-        var item = this.allOperationItems[key];
+        const item = this.allOperationItems[key];
         var isAdd = false;
         for (const key2 in item.identity) {
           if (item.identity[key2] == this.userInfo.identity) {
@@ -192,12 +168,17 @@ export default {
         }
       }
       this.totalPage =
-        items.length % 6 == 0 ? items.length / 6 : items.length / 6 + 1;
+        items.length % 6 == 0
+          ? items.length / 6
+          : parseInt(items.length / 6) + 1;
       this.showOperationItems = items.slice(
         (page - 1) * pageSize,
         page * pageSize
       );
       this.page = page;
+    },
+    goto(url) {
+      this.$router.push(url);
     },
   },
 };

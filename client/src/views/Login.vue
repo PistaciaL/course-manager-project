@@ -34,6 +34,7 @@
 <script>
 import NameLogin from "@/components/login/NameLogin.vue";
 import PhoneLogin from "@/components/login/PhoneLogin.vue";
+
 export default {
   components: { NameLogin, PhoneLogin },
   data() {

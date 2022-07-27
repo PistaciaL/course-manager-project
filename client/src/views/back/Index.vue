@@ -1,5 +1,5 @@
 <template>
-  <h1>THIS IS PAGE 2.</h1>
+  <el-empty></el-empty>
 </template>
 
 <script>
@@ -8,6 +8,8 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+.el-empty{
+  margin: auto;
+}
 </style>

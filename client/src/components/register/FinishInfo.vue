@@ -2,7 +2,7 @@
   <el-form ref="form" :model="form" label-width="150px" :rules="rules">
     <el-form-item label="请上传头像" class="form-item">
       <el-button class="cancel_upload" @click="cancelUpload">取消上传</el-button>
-      <el-upload class="avatar-uploader" action="https://jsonplaceholder.typicode.com/posts/" :show-file-list="false"
+      <el-upload class="avatar-uploader" action="http://localhost:8081/" :show-file-list="false"
         :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload">
         <img v-if="cacheImageUrl" :src="cacheImageUrl" class="avatar">
         <i v-else class="el-icon-plus avatar-uploader-icon"></i>
@@ -91,9 +91,7 @@ export default {
   methods: {
     nextStep() {
       this.$refs.form.validate((valid) => {
-        console.log(valid)
         if (valid) {
-          console.log("nextstep");
           this.$parent.stepActive = 3;
         } else {
           return false;
@@ -187,7 +185,6 @@ export default {
 }
 
 /* avatar */
-
 .avatar-uploader-icon {
   font-size: 28px;
   color: #8c939d;
@@ -198,7 +195,9 @@ export default {
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
 }
-
+.avatar-uploader{
+  height: 180px;
+}
 .avatar {
   width: 178px;
   height: 178px;

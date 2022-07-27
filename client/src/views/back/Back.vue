@@ -1,14 +1,15 @@
 <template>
-  <div class="container">
+  <div class="back-container">
     <el-container>
       <el-header ref="header" class="header-container" height="40px">
         <Header></Header>
+        <el-divider></el-divider>
       </el-header>
       <el-container ref="body">
         <el-aside class="aside-container" width="200px">
           <Aside @changeAsideHeight="changeAsideHeight"></Aside>
         </el-aside>
-        <el-main class="main-container" ref="container" :style="{ height: containerHeight + 'px' }">
+        <el-main class="main-container" ref="container" :style="{ 'min-height': containerHeight + 'px' }">
           <router-view />
         </el-main>
       </el-container>
@@ -66,16 +67,15 @@ export default {
 </script>
 
 <style scoped>
+.back-container {
+  min-width: 1200px;
+}
 .header-container {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
+  padding: 0;
 }
 
-.aside-container {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
-}
-
-.main-container {
-  background: #eee;
+.el-divider{
+  margin: 0;
 }
 
 .footer-container {
