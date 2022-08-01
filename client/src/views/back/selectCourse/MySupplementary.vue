@@ -147,7 +147,7 @@
             {{ scope.row.studentNumb }}/{{ scope.row.totalNumb }}
           </div>
         </el-table-column>
-        <el-table-column label="申请补选" width="120">
+        <el-table-column label="操作" width="120" align="center">
           <div slot-scope="scope">
             <el-button @click="showApplyForm(scope.row.id)" size="small"
               >我要补选</el-button
@@ -488,10 +488,12 @@ export default {
 .search-group span {
   padding: 0 10px;
 }
-.search-item + .search-item {
-  margin-left: 20px;
+.search-item{
   display: flex;
   align-items: center;
+}
+.search-item + .search-item {
+  margin-left: 20px;
 }
 
 .table-container {

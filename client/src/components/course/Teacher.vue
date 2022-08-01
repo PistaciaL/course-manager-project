@@ -9,6 +9,7 @@
         reserve-keyword
         :remote-method="searchItems"
         :loading="loading"
+        size="small"
       >
         <el-option
           v-for="item in terms"
@@ -22,13 +23,13 @@
     <table cellspacing="0px" class="outer-table">
       <thead>
         <tr class="outer-head">
-          <th style="width: 206px">科目名称</th>
-          <th style="width: 120px">课程代码</th>
-          <th style="width: 100px">课时数</th>
-          <th style="width: 120px">课程人数</th>
-          <th style="width: 100px">排课时间</th>
-          <th style="width: 170px">考试情况</th>
-          <th style="width: 130px">课程成绩</th>
+          <th style="min-width: 206px">科目名称</th>
+          <th style="min-width: 120px">课程代码</th>
+          <th style="min-width: 100px">课时数</th>
+          <th style="min-width: 120px">课程人数</th>
+          <th style="min-width: 100px">排课时间</th>
+          <th style="min-width: 170px">考试情况</th>
+          <th style="min-width: 130px">课程成绩</th>
         </tr>
       </thead>
       <tbody class="outer-body">
@@ -49,7 +50,7 @@
           <td style="text-align: center">
             <el-popover
               placement="right"
-              trigger="click"
+              trigger="hover"
               v-if="course.exams != null"
             >
               <el-table :data="course.exams">
@@ -64,11 +65,13 @@
                   label="教室"
                 ></el-table-column>
               </el-table>
-              <el-button slot="reference"
+              <el-button slot="reference" @click="setExam(course.id)"
                 >已设置{{ course.exams.length }}次考试</el-button
               >
             </el-popover>
-            <div v-else>未进行考试</div>
+            <el-button v-else slot="reference" @click="setExam(course.id)"
+              >未进行考试</el-button
+            >
           </td>
           <td>
             <el-button @click="searchMark(course.id)"
@@ -85,6 +88,45 @@
           <p style="background: #90939920">{{ hasCourse(data.data.day) }}</p>
         </template>
       </el-calendar>
+    </el-dialog>
+
+    <el-dialog title="添加考试" :visible.sync="addExamShow" width="600px">
+      <el-form :model="addExamForm">
+        <el-form-item label="考试日期">
+          <el-date-picker
+            type="date"
+            placeholder="选择日期"
+            v-model="addExamForm.date"
+          ></el-date-picker>
+        </el-form-item>
+        <el-form-item label="考试时长">
+          <el-input-number
+            v-model="addExamForm.stillHour"
+            @change="addExamChangeHour"
+            :min="0"
+            :max="4"
+            controls-position="right"
+            size='small'
+          ></el-input-number>
+          小时
+          <el-input-number
+            v-model="addExamForm.stillMinute"
+            @change="addExamChangeMinute"
+            :min="this.addExamForm.stillHour == 0 ? 10 : -10"
+            :max="this.addExamForm.stillHour == 4 ? 0 : 60"
+            :step="10"
+            step-strictly
+            controls-position="right"
+            size='small'
+          ></el-input-number>
+          分钟
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="addExam"
+          >添加考试</el-button
+        >
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -245,9 +287,33 @@ export default {
         [],
       ],
       scheduleIsShow: false,
+      addExamShow: false,
+      addExamForm: {
+        id: "",
+        date: "",
+        stillHour: "",
+        stillMinute: "",
+      },
     };
   },
   methods: {
+    addExam(){
+      console.log('添加考试')
+    },
+    addExamChangeMinute(currentValue) {
+      if (currentValue < 0) {
+        this.addExamForm.stillHour -= 1;
+        this.addExamForm.stillMinute = 50;
+      } else if (currentValue > 50) {
+        this.addExamForm.stillHour += 1;
+        this.addExamForm.stillMinute = 0;
+      }
+    },
+    addExamChangeHour(currentValue){
+      if(currentValue ==4){
+        this.addExamForm.stillMinute = 0;
+      }
+    },
     totalMark(marks) {
       var sum = 0;
       for (const key in marks) {
@@ -276,6 +342,10 @@ export default {
     searchMark(id) {
       console.log("跳转到成绩详情页面,课程id" + id);
     },
+    setExam(id) {
+      this.addExamForm.id = id;
+      this.addExamShow = true;
+    },
   },
 };
 </script>
@@ -287,6 +357,7 @@ export default {
 
 .outer-table {
   margin: auto;
+  width: 100%;
 }
 .outer-body > tr > td {
   font-weight: 400;
@@ -328,11 +399,14 @@ export default {
 .inner-table td {
   text-align: center;
 }
-
-.term-select {
-  margin-left: 19%;
-}
 td {
   padding: 0 10px;
+}
+
+.term-select{
+  margin-left: 50px;
+}
+.el-input-number{
+  width: 100px;
 }
 </style>

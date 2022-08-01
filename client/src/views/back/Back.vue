@@ -7,10 +7,10 @@
       </el-header>
       <el-container ref="body">
         <el-aside class="aside-container" width="200px">
-          <Aside @changeAsideHeight="changeAsideHeight"></Aside>
+          <Aside @changeAsideHeight="changeAsideHeight" :containerHeight="containerHeight"></Aside>
         </el-aside>
         <el-main class="main-container" ref="container" :style="{ 'min-height': containerHeight + 'px' }">
-          <router-view />
+          <router-view ref="mainContainer" @changeHeight='childChangeHeight'/>
         </el-main>
       </el-container>
       <el-footer ref="footer" class="footer-container" height="100px">
@@ -28,18 +28,18 @@ export default {
   components: { Aside, Header, Footer },
   data() {
     return {
+      addHeight:1,
       componentHeight: {
         totalHeight: 0,
         headerHeight: 0,
         asideHeight: 0,
         footerHeight: 0
       },
-      list: [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     };
   },
   computed: {
     containerHeight() {
-      return Math.max(this.componentHeight.totalHeight - this.componentHeight.headerHeight - this.componentHeight.footerHeight, this.componentHeight.asideHeight);
+      return this.addHeight*Math.max(this.componentHeight.totalHeight - this.componentHeight.headerHeight - this.componentHeight.footerHeight, this.componentHeight.asideHeight);
     },
   },
   mounted() {
@@ -59,6 +59,9 @@ export default {
     // })
   },
   methods: {
+    childChangeHeight(e){
+      this.addHeight=e
+    },
     changeAsideHeight(height) {
       this.componentHeight.asideHeight = height;
     },
@@ -72,6 +75,10 @@ export default {
 }
 .header-container {
   padding: 0;
+}
+.main-container{
+  border-left: 1px solid #DCDFE6;
+  overflow: hidden;
 }
 
 .el-divider{

@@ -9,6 +9,7 @@
         reserve-keyword
         :remote-method="searchItems"
         :loading="loading"
+        size="small"
       >
         <el-option
           v-for="item in terms"
@@ -22,18 +23,18 @@
     <table cellspacing="0px" class="outer-table">
       <thead>
         <tr class="outer-head">
-          <th style="width: 200px">课程名</th>
-          <th style="width: 130px">任课教师</th>
-          <th style="width: 50px">学分</th>
-          <th style="width: 510px">课程分数</th>
-          <th style="width: 70px">排课时间</th>
+          <th style="min-width: 150px">课程名</th>
+          <th style="min-width: 100px">任课教师</th>
+          <th style="min-width: 50px">学分</th>
+          <th style="width: 560px">课程分数</th>
+          <th style="min-width: 100px">排课时间</th>
         </tr>
       </thead>
       <tbody class="outer-body">
         <tr v-for="course in courses" :key="course.id">
           <td>{{ course.name }}</td>
-          <td>{{ course.tName }}</td>
-          <td>{{ course.credit }}</td>
+          <td style="text-align:center">{{ course.tName }}</td>
+          <td style="text-align:center">{{ course.credit }}</td>
           <td>
             <div v-if="course.marks != null" class="inner-table-container">
               <table cellspacing="0px" class="inner-table">
@@ -62,7 +63,7 @@
             </div>
             <div v-else class="no-mark">成绩暂未发布</div>
           </td>
-          <td>
+          <td style="text-align:center">
             <el-button
               icon="el-icon-search"
               circle
@@ -257,6 +258,7 @@ export default {
 
 .outer-table {
   margin: auto;
+  width: 100%;
 }
 .outer-body > tr > td {
   font-weight: 400;
@@ -300,7 +302,7 @@ export default {
 }
 
 .term-select{
-  margin-left: 19%;
+  margin-left: 50px;
 }
 td{
   padding: 0 10px;

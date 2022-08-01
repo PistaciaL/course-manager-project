@@ -38,6 +38,9 @@
 <script>
 export default {
   name: "Aside",
+  props:{
+    'containerHeight': Number
+  },
   data() {
     return {
       allOperationItems: [
@@ -271,5 +274,8 @@ export default {
 <style scoped>
 .aside {
   overflow: hidden;
+}
+.el-menu{
+  border: 0;
 }
 </style>

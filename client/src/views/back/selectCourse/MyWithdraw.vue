@@ -15,6 +15,7 @@
         reserve-keyword
         :remote-method="searchItems"
         :loading="termLoading"
+        size="small"
       >
         <el-option
           v-for="item in terms"
@@ -39,7 +40,7 @@
             {{ scope.row.studentNumb }}/{{ scope.row.totalNumb }}
           </template>
         </el-table-column>
-        <el-table-column label="我要退课" width="100">
+        <el-table-column label="操作" width="100" align="center">
           <template slot-scope="scope">
             <el-popconfirm
               title="退课操作无法撤回。确认是否选择退课？"
@@ -277,7 +278,7 @@ export default {
       console.log("提交退课申请");
       setTimeout(() => {
         //如果不能立即退课
-        if (Math.random() < 1) {
+        if (Math.random() < 0.5) {
           this.withdrawFormShow = true;
           this.loadingWithdraw = false;
         } else {
@@ -317,5 +318,8 @@ export default {
   float: right;
   margin-top: 10px;
   margin-right: 30px;
+}
+.table-container {
+  margin-top: 30px;
 }
 </style>

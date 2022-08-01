@@ -216,8 +216,7 @@ export default {
   margin-right: 30px;
 }
 .table {
-  min-width: 900px;
-  width: 70%;
+  min-width: 960px;
   margin: 0 auto;
 }
 </style>

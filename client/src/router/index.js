@@ -235,6 +235,23 @@ const routes = [{
             },
         },
     ]
+}, {
+    path: '/rules',
+    component: () =>
+        import ("@/views/rules/Rule"),
+    children: [{
+        path: '',
+        component: () =>
+            import ('@/views/rules/Index')
+    }, {
+        path: 'courseselect',
+        component: () =>
+            import ("@/views/rules/CourseSelect"),
+    }, {
+        path: 'guide',
+        component: () =>
+            import ("@/views/rules/Guide")
+    }]
 }]
 
 const router = new VueRouter({

@@ -414,12 +414,13 @@ export default {
 .search-group span {
   padding: 0 10px;
 }
-.search-item + .search-item {
-  margin-left: 20px;
+.search-item{
   display: flex;
   align-items: center;
 }
-
+.search-item + .search-item {
+  margin-left: 20px;
+}
 .table-container {
   margin-top: 30px;
 }
