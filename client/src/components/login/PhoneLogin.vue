@@ -18,6 +18,7 @@
 </template>
 
 <script>
+
 var that;
 export default {
   data() {
@@ -35,7 +36,7 @@ export default {
     }
     return {
       form: {
-        phone: '',
+        phone: localStorage.getItem('phone'),
         vCode: ''
       },
       rules: {
@@ -57,7 +58,29 @@ export default {
     onSubmit() {
       this.$refs.form.validate((valid) => {
         if (valid) {
-          console.log("手机号登录")
+          this.axios({
+            method:'post',
+            url:'/login/phone',
+            data:{
+              phoneNumb:this.form.phone,
+              code:this.form.vCode
+            }
+          }).then(res=>{
+            if(res.data.code==200){
+              this.MyUtils.fillLocalStorage(res.data.data)
+              this.$router.push("/")
+            } else {
+              this.$message({
+                message: res.data.message,
+                type: 'warning'
+              });
+            }
+          }, e=>{
+            this.$message({
+                message: e.response.data.message,
+                type: 'warning'
+              });
+          })
         } else {
           return false; 
         }
@@ -67,8 +90,23 @@ export default {
       this.btnContainer = '60'
       this.isSend = true
       this.btnDisabled = true
-      this.changeBtnText()
-      console.log("验证码发送")
+      this.axios({
+        method:'post',
+        url:'/verifyCode/getPhoneCode',
+        params:{
+          phoneNumb:this.form.phone
+        }
+      }).then(res=>{
+        if(res.data.code==200){
+          this.changeBtnText()
+          this.$message({
+            message: '验证码发送成功',
+            type: 'success'
+          });
+        } else{
+          this.$message.error('发送失败,请稍后再试');
+        }
+      })
     },
     changeBtnText() {
       setTimeout(() => {

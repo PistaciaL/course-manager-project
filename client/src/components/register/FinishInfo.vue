@@ -2,7 +2,7 @@
   <el-form ref="form" :model="form" label-width="150px" :rules="rules">
     <el-form-item label="请上传头像" class="form-item">
       <el-button class="cancel_upload" @click="cancelUpload">取消上传</el-button>
-      <el-upload class="avatar-uploader" action="http://localhost:8081/" :show-file-list="false"
+      <el-upload class="avatar-uploader" action="http://localhost:8080/api/avatar/avatarPost" :show-file-list="false"
         :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload">
         <img v-if="cacheImageUrl" :src="cacheImageUrl" class="avatar">
         <i v-else class="el-icon-plus avatar-uploader-icon"></i>
@@ -14,6 +14,7 @@
     <el-form-item label="请输入验证码" prop="vCode" class="form-item">
       <el-input v-model="form.vCode" class="verification-input"></el-input>
       <el-button @click="reGetVerificationCode" :disabled="btnDisabled" class="verification-btn">{{ btnContainer }}
+        <i class="el-icon-loading" v-if="btnContainer==''"></i>
       </el-button>
     </el-form-item>
     <el-form-item label="请输入密码" class="form-item" prop="passwd">
@@ -92,18 +93,76 @@ export default {
     nextStep() {
       this.$refs.form.validate((valid) => {
         if (valid) {
-          this.$parent.stepActive = 3;
+          this.axios({
+            method:'post',
+            url:'/register/finish',
+            data:{
+              avatarUrl:this.form.imageUrl,
+              phoneNumb:this.form.phone,
+              password:this.RSA.encrypt(this.form.passwd),
+              verifyCode:this.form.vCode
+            } 
+          }).then(res=>{
+            if(res.data.code==200){
+              const jwt = this.jwt_decode(res.data.data)
+              localStorage.setItem('name', jwt.name);
+              localStorage.setItem('workNumb', jwt.workNumb);
+              localStorage.setItem('phone', jwt.phone);
+              localStorage.setItem('token', res.data.data);
+              this.$parent.stepActive = 3;
+            } else {
+              this.$message({
+                message: res.data.message,
+                type: 'warning'
+              });
+            }
+          }, e=>{
+            this.$message({
+                message: e.response.data.message,
+                type: 'warning'
+              });
+          })
         } else {
           return false;
         }
       });
     },
     reGetVerificationCode() {
-      this.btnContainer = '60'
+      this.btnContainer=''
       this.isSend = true,
-        this.btnDisabled = true
-      this.changeBtnText()
-      console.log("发送手机验证码")
+      this.btnDisabled = true
+      this.axios({
+        method:'post',
+        url:'/verifyCode/getPhoneCode',
+        params:{
+          phoneNumb:this.form.phone
+        }
+      }).then(res=>{
+        if(res.data.code==200){
+          this.btnContainer = '60'
+          this.$message({
+            message: "发送成功",
+            type: 'success'
+          });
+          this.changeBtnText()
+        } else {
+          this.btnContainer="发送验证码"
+          this.isSend=false
+          this.btnDisabled=false
+          this.$message({
+            message:"发送失败,请稍后再试",
+            type:'error'
+          })
+        }
+      }, error=>{
+        this.btnContainer="发送验证码"
+        this.isSend=false
+        this.btnDisabled=false
+        this.$message({
+          message:"发送失败,请稍后再试",
+          type:'error'
+        })
+      })
     },
     changeBtnText() {
       setTimeout(() => {
@@ -131,8 +190,7 @@ export default {
       }
     },
     handleAvatarSuccess(res, file) {
-      console.log("返回保存的头像url")
-      this.form.imageUrl = res.imgUrl;
+      this.form.imageUrl = res.data;
       this.cacheImageUrl = URL.createObjectURL(file.raw)
     },
     beforeAvatarUpload(file) {

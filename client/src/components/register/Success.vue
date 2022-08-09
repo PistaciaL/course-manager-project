@@ -1,17 +1,20 @@
 <template>
-  <el-result icon="success" title="注册成功" :subTitle="'正在自动登录中，请稍后' + dot" />
+  <el-result icon="success" title="注册成功" :subTitle="prefixStr + dot" />
 </template>
 
 <script>
 export default {
   data() {
     return {
+      prefixStr:'注册成功,正在跳转至登陆页面',
       dot: '...'
     }
   },
   mounted(){
     this.changeDot()
-    console.log("登录")
+    setTimeout(() => {
+      this.$router.push("/")
+    }, 3000);
   },
   methods: {
     changeDot() {

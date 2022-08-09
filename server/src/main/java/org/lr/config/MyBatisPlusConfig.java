@@ -18,7 +18,7 @@ public class MyBatisPlusConfig {
         interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
         PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor();
         paginationInnerInterceptor.setDbType(DbType.POSTGRE_SQL);
-        paginationInnerInterceptor.setMaxLimit(100L);
+        paginationInnerInterceptor.setMaxLimit(50L);
         interceptor.addInnerInterceptor(paginationInnerInterceptor);
         return interceptor;
     }

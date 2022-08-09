@@ -1,9 +1,8 @@
 package org.lr.handler;
 
-import org.lr.api.ErrorCode;
+import com.baomidou.mybatisplus.core.exceptions.MybatisPlusException;
+import org.lr.api.ResultCode;
 import org.lr.api.Result;
-import org.lr.exception.NotFoundException;
-import org.lr.exception.TokenException;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,23 +15,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Order(0)
 @RestControllerAdvice
+@ResponseStatus(HttpStatus.BAD_REQUEST)
 public class RestExceptionHandler {
 
-    @ExceptionHandler(NullPointerException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Result handlerNullPointerException(Exception e) {
-        return new Result(ErrorCode.NULL_POINTER_EXCEPTION);
+//    @ExceptionHandler(NullPointerException.class)
+    public Result handlerNullPointerException(NullPointerException e) {
+        return new Result(ResultCode.FAILURE, "缺少参数");
     }
 
-    @ExceptionHandler(NotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Result handlerNotFoundException(NotFoundException e){
-        return new Result(e);
-    }
-
-    @ExceptionHandler(TokenException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Result handlerTokenException(TokenException e) {
-        return new Result(e);
+    @ExceptionHandler(MyException.class)
+    public Result handlerMyException(MyException e){
+        return new Result(ResultCode.FAILURE, e.getMessage());
     }
 }

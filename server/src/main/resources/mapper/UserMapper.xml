@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.lr.mapper.UserMapper">
+    <resultMap id="User" type="org.lr.entity.User">
+        <id property="id" column="user_id" javaType="String"/>
+        <result property="name" column="u_name" javaType="String"/>
+        <result property="avatar" column="avatar" javaType="String"/>
+        <result property="phone" column="phone" javaType="String"/>
+        <result property="password" column="password" javaType="String"/>
+        <result property="studyYear" column="study_year" javaType="Integer"/>
+        <result property="identity" column="identity" javaType="org.lr.enumType.IdentityEnum" typeHandler="org.lr.typeHandler.MyEnumTypeHandler"/>
+        <result property="permission" column="permission" javaType="org.lr.enumType.PermissionEnum" typeHandler="org.lr.typeHandler.MyEnumTypeHandler"  />
+        <result property="createTime" column="create_time" javaType="java.time.LocalDateTime"/>
+        <association property="college" javaType="org.lr.entity.College">
+            <id property="id" column="college_id" javaType="Integer"/>
+            <result property="name" column="c_name" javaType="String"/>
+        </association>
+        <association property="specialty" javaType="org.lr.entity.Specialty">
+            <id property="id" column="specialty_id" javaType="Integer"/>
+            <result property="name" column="s_name" javaType="String"/>
+            <association property="college" javaType="org.lr.entity.College">
+                <id property="id" column="college_id" javaType="Integer"/>
+                <result property="name" column="c_name" javaType="String"/>
+            </association>
+        </association>
+    </resultMap>
+
+    <insert id="insert">
+        insert into "user"(user_id, name, avatar, phone, password, college_id, specialty_id, study_year, identity, permission, create_time)
+            values(#{id}, #{name},#{avatar},#{phone},#{password},#{college.id},#{specialty.id},#{studyYear},#{identity,typeHandler=org.lr.typeHandler.MyEnumTypeHandler}::identity_enum,#{permission,typeHandler=org.lr.typeHandler.MyEnumTypeHandler}::permission_enum, #{createTime})
+    </insert>
+    <update id="updateAvatarByUserId">
+        update "user" set avatar=#{avatarName} where user_id=#{userId}
+    </update>
+
+    <select id="selectById" resultMap="User">
+        select
+            u.user_id,u.name as u_name,avatar,phone,study_year,"identity","permission",create_time,
+            c.college_id,c.name as c_name,
+            s.specialty_id,s.name as s_name
+        from "user" u
+                 left join college c on c.college_id=u.college_id
+                 left join specialty s on s.specialty_id =u.specialty_id
+        where user_id=#{id}
+    </select>
+    <select id="selectByPhone" resultMap="User">
+        select
+            u.user_id,u.name as u_name,avatar,phone,study_year,"identity","permission",create_time,
+            c.college_id,c.name as c_name,
+            s.specialty_id,s.name as s_name
+        from "user" u
+                 left join college c on c.college_id=u.college_id
+                 left join specialty s on s.specialty_id =u.specialty_id
+        where phone=#{phoneNumb}
+    </select>
+    <select id="selectPasswdById" resultType="java.lang.String">
+        select password from "user" where user_id=#{numb}
+    </select>
+</mapper>

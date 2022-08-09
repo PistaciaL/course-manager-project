@@ -262,24 +262,24 @@ const router = new VueRouter({
 
 // 自定义函数
 const isStudent = () => {
-    return store.state.userInfo.identity === "学生"
+    return localStorage.getItem('identity') === "学生"
 }
 const isTeacher = () => {
-    return store.state.userInfo.identity === "教师"
+    return localStorage.getItem('identity') === "教师"
 }
 const isCollegeManager = () => {
-    return store.state.userInfo.permission === "院级管理员"
+    return localStorage.getItem('permission') === "院级管理员"
 }
 const isSchoolManager = () => {
-    return store.state.userInfo.permission === "校级管理员"
+    return localStorage.getItem('permission') === "校级管理员"
 }
 
 
 
 router.beforeResolve((to, from, next) => {
-    if ((to.fullPath == '/' || to.fullPath.substr(0, 5) == '/back') && !store.state.userInfo.isLogin) {
+    if ((to.fullPath == '/' || to.fullPath.substr(0, 5) == '/back') && !localStorage.getItem('isLogin')) {
         next('/login')
-    } else if ((to.fullPath == '/login' || to.fullPath == '/register') && store.state.userInfo.isLogin) {
+    } else if ((to.fullPath == '/login' || to.fullPath == '/register') && localStorage.getItem('isLogin')) {
         next('/')
     } else {
         next()

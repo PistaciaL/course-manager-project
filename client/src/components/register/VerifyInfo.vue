@@ -33,6 +33,7 @@
 </template>
 
 <script>
+
 export default {
   data() {
     const verifyDocNumb = (rule, value, callback) => {
@@ -119,8 +120,28 @@ export default {
     nextStep() {
       this.$refs.form.validate((valid) => {
         if (valid) {
-          console.log("验证学工号");
-          this.$parent.stepActive = 1;
+          this.axios({
+            method:"post",
+            url:"/register/verify",
+            data:{
+              workNumber:this.form.number,
+              name:this.form.name,
+              idNumber:this.form.documentNumb
+            }
+          }).then(res=>{
+            if(res.data.code==200){
+              const jwt = this.jwt_decode(res.data.data)
+              localStorage.setItem('token', res.data.data);
+              localStorage.setItem('name', jwt.name);
+              localStorage.setItem('workNumb', jwt.workNumb);
+              this.$parent.stepActive = 1;
+            } else {
+              this.$message({
+                message: res.data.message,
+                type: 'warning'
+              });
+            }
+          })
         } else {
           return false;
         }

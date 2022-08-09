@@ -51,12 +51,6 @@ export default {
     window.onresize = function () {
       that.componentHeight.totalHeight = `${document.documentElement.clientHeight}`;
     };
-    // this.axios({
-    //     method: 'get',
-    //     url: '/users/1'
-    // }).then(function(res){
-    //     console.log(res)
-    // })
   },
   methods: {
     childChangeHeight(e){

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.lr.mapper.SpecialtyMapper">
+    <resultMap id="Specialty" type="org.lr.entity.Specialty">
+        <id property="id" column="specialty_id" javaType="Integer"/>
+        <result property="name" column="s_name" javaType="String"/>
+        <association property="college" javaType="org.lr.entity.College">
+            <id property="id" column="college_id" javaType="Integer"/>
+            <result property="name" column="c_name" javaType="String"/>
+        </association>
+    </resultMap>
+
+    <insert id="insert">
+        insert into specialty("name", college_id) values(#{name}, #{college.id})
+    </insert>
+
+    <select id="selectById" resultMap="Specialty">
+        select specialty_id, c.college_id, c.name as c_name, s.name as s_name from specialty s left join college c on s.college_id = c.college_id where specialty_id=#{id}
+    </select>
+</mapper>

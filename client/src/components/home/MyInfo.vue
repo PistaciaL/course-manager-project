@@ -9,17 +9,17 @@
               <el-avatar
                 :size="128"
                 ref="avatar"
-                :src="userInfo.avatarUrl"
+                :src="MyUtils.avatarUrl(userInfo('avatarUrl'))"
                 class="my-info-avatar"
                 shape="square"
               >
-                {{ userInfo.name.slice(0, 2) }}
+                {{ userInfo('name').slice(0, 2) }}
               </el-avatar>
             </div>
             <div class="my-info-content-item">
               <div class="my-info-tag-content">
-                <el-tag>{{ userInfo.identity }}</el-tag>
-                <el-tag>{{ userInfo.permission }}</el-tag>
+                <el-tag>{{ userInfo('identity') }}</el-tag>
+                <el-tag>{{ userInfo('permission') }}</el-tag>
               </div>
             </div>
             <div class="my-info-content-item my-info-detail-content">
@@ -56,7 +56,7 @@
                   title="近期成绩"
                   name="mark"
                   class="collapse-item"
-                  v-if="userInfo.identity == '学生'"
+                  v-if="userInfo('identity') == '学生'"
                 >
                   <el-table
                     :data="marks"
@@ -127,9 +127,9 @@ export default {
       ],
     }
   },
-  computed:{
-    userInfo() {
-      return this.$store.state.userInfo;
+  methods:{
+    userInfo(str) {
+      return localStorage.getItem(str);
     },
   }
 }

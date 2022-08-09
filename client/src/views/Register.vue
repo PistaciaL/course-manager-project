@@ -10,7 +10,7 @@
     <div class="form-body">
       <div v-if="stepActive==0"><Step1/></div>
       <div v-else-if="stepActive==1"><Step2/></div>
-      <div v-else><AutoLogin/></div>
+      <div v-else><Success/></div>
     </div>
   </div>
 </template>
@@ -18,9 +18,9 @@
 <script>
 import Step1 from '@/components/register/VerifyInfo.vue';
 import Step2 from '@/components/register/FinishInfo.vue';
-import AutoLogin from '@/components/register/AutoLogin.vue';
+import Success from '@/components/register/Success.vue';
 export default {
-  components: { Step1, Step2, AutoLogin },
+  components: { Step1, Step2, Success },
   data() {
     return {
       stepActive: 0

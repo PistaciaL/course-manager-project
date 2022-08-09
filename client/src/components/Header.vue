@@ -6,32 +6,6 @@
       </div>
     </div>
     <div class="right-flex">
-      <el-button
-        @click="
-          userInfo.identity = userInfo.identity == '学生' ? '教师' : '学生'
-        "
-        size="small"
-        style="float: right"
-        >测试用:修改身份,当前身份:{{ userInfo.identity }}</el-button
-      >
-      <el-button
-        @click="
-          userInfo.permission =
-            userInfo.permission == '院级管理员'
-              ? '校级管理员'
-              : userInfo.permission == '校级管理员'
-              ? '普通用户'
-              : '院级管理员'
-        "
-        size="small"
-        style="float: right"
-        >测试用:修改权限,当前权限:{{
-          userInfo.permission == "普通用户"
-            ? "普通用户---"
-            : userInfo.permission
-        }}</el-button
-      >
-
       <div
         class="operation-item"
         :class="{ 'operation-item-mouseover': mouseOver == 'notice' }"
@@ -80,10 +54,10 @@
             <el-avatar
               :size="28"
               ref="avatar"
-              :src="userInfo.avatarUrl"
+              :src="MyUtils.avatarUrl(userInfo('avatarUrl'))"
               class="avatar"
             >
-              {{ userInfo.name.slice(0, 2) }}
+              {{ userInfo('name').slice(0, 2) }}
             </el-avatar>
           </div>
 
@@ -100,6 +74,7 @@
 </template>
 
 <script>
+
 export default {
   name: "Header",
   data() {
@@ -114,15 +89,13 @@ export default {
       ],
     };
   },
-  computed: {
-    userInfo() {
-      return this.$store.state.userInfo;
-    },
-  },
   mounted() {
-    console.log("websocket获取消息");
+    this.$webSocket.initWebSocket(this.userInfo("token"))
   },
   methods: {
+    userInfo(str) {
+      return localStorage.getItem(str);
+    },
     setMouseOver(str) {
       this.mouseOver = str;
     },
@@ -134,7 +107,7 @@ export default {
       }
     },
     logout() {
-      this.$store.state.userInfo = { isLogin: false };
+      localStorage.clear();
       this.$router.push("/login");
     },
     handleAvatarCommand(command) {
@@ -162,7 +135,7 @@ export default {
 }
 
 .header {
-  padding: 0 40px;
+  padding-right: 40px;
   height: 100%;
 }
 
@@ -187,6 +160,8 @@ export default {
 
 .logo {
   user-select: none;
+  width: 200px;
+  text-align: center;
 }
 .notice-icon {
   font-size: 24px;

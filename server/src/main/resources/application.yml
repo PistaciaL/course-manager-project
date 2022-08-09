@@ -1,11 +1,16 @@
 spring:
   datasource:
-    url: jdbc:postgresql://43.142.36.30:5432/course_system
-    name: postgres
-    password: postgres
+    url: jdbc:postgresql://127.0.0.1:5432/course_system?currentSchema=course_path
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+  redis:
+    timeout: 3000
+    host: 43.142.36.30
+    password: BXYbxy523656497
+    port: 6379
 mybatis-plus:
   global-config:
     db-config:
-      logic-delete-field: idDeleted
-      logic-not-delete-value: 0
-      logic-delete-value: 1
+      logic-not-delete-value: false
+      logic-delete-value: true

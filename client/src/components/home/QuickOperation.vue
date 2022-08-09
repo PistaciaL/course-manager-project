@@ -136,15 +136,13 @@ export default {
       page: 1,
     };
   },
-  computed: {
-    userInfo() {
-      return this.$store.state.userInfo;
-    },
-  },
   mounted() {
     this.changePage(1);
   },
   methods: {
+    userInfo(str) {
+      return localStorage.getItem(str);
+    },
     changePage(page) {
       const pageSize = 6;
       var items = new Array();
@@ -152,7 +150,7 @@ export default {
         const item = this.allOperationItems[key];
         var isAdd = false;
         for (const key2 in item.identity) {
-          if (item.identity[key2] == this.userInfo.identity) {
+          if (item.identity[key2] == this.userInfo('identity')) {
             items.push(item);
             isAdd = true;
             break;
@@ -160,7 +158,7 @@ export default {
         }
         if (!isAdd) {
           for (const key2 in item.permission) {
-            if (item.permission[key2] == this.userInfo.permission) {
+            if (item.permission[key2] == this.userInfo('permission')) {
               items.push(item);
               break;
             }

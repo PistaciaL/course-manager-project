@@ -8,7 +8,7 @@
     </el-form-item>
     <el-form-item class="form-item" prop="verificationCode">
       <el-input v-model="form.verificationCode"  placeholder="请输入验证码" class="verification-input"></el-input>
-      <img :src="verificationCodeSrc" class="verification-code" @click="reGetVerificationCode"/>
+      <img :src="picFill" class="verification-code" @click="reGetVerificationCode"/>
     </el-form-item>
     <!-- checkbox start -->
     <el-form-item class="form-item form-item-checkbox" prop="rememberPasswd">
@@ -25,11 +25,12 @@
 </template>
 
 <script>
+import MyUtils from '@/utils/myUtils';
 export default {
   data(){
     return{
       form: {
-        name: '',
+        name: localStorage.getItem('workNumb'),
         password: '',
         rememberPasswd: false,
         verificationCode: ''
@@ -46,21 +47,61 @@ export default {
           {len: 6, message: '请输入正确验证码', trigger: 'blur'}
         ]
       },
-      verificationCodeSrc: ''
+      picFill: '',
+      codeId:''
     }
+  },
+  mounted(){
+    this.reGetVerificationCode()
   },
   methods: {
     onSubmit(){
       this.$refs.form.validate((valid) => {
         if (valid) {
-          console.log("账号密码登录")
+          this.axios({
+            method:'post',
+            url:'/login/username',
+            data:{
+              name:this.form.name,
+              password:this.RSA.encrypt(this.form.password),
+              codeId:this.codeId,
+              code:this.form.verificationCode
+            }
+          }).then(res=>{
+            if(res.data.code==200){
+              if(this.form.rememberPasswd){
+                console.log("remember")
+                localStorage.setItem('password', this.RSA.encrypt(this.form.password));
+              }
+              this.MyUtils.fillLocalStorage(res.data.data)
+              this.$router.push("/")
+            }else {
+              this.reGetVerificationCode()
+              this.$message({
+                  message: e.response.data.message,
+                  type: 'warning'
+                });
+            }
+          }, e=>{
+            this.reGetVerificationCode()
+            this.$message({
+                message: e.response.data.message,
+                type: 'warning'
+              });
+          })
         } else {
           return false;
         }
       });
     },
     reGetVerificationCode(){
-      console.log("重新获取验证码")
+      this.axios({
+        method:'POST',
+        url:'/verifyCode/getPicCode'
+      }).then(res=>{
+        this.picFill="data:image/jpeg;base64,"+res.data.data.pic,
+        this.codeId = res.data.data.codeId
+      })
     }
   }
 }

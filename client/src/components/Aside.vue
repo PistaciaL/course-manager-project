@@ -163,16 +163,13 @@ export default {
     };
   },
   computed: {
-    userInfo() {
-      return this.$store.state.userInfo;
-    },
     operationItems() {
       var items = new Array();
       for (const key in this.allOperationItems) {
         const item = this.allOperationItems[key];
         var isAdd = false;
         for (const key2 in item.identity) {
-          if (item.identity[key2] == this.userInfo.identity) {
+          if (item.identity[key2] == this.userInfo('identity')) {
             if(item.children!=null){
               const children = item.children;
               var newItem = {};
@@ -184,7 +181,7 @@ export default {
                 const item2 = children[key3]
                 var isAdd2 = false
                 for(const key4 in item2.identity){
-                  if(item2.identity[key4]==this.userInfo.identity){
+                  if(item2.identity[key4]==this.userInfo('identity')){
                     newItem.children.push(item2);
                     isAdd2 = true
                     break;
@@ -192,7 +189,7 @@ export default {
                 }
                 if(!isAdd2){
                   for(const key4 in item2.permission){
-                    if(item2.permission[key4]==this.userInfo.permission){
+                    if(item2.permission[key4]==this.userInfo('permission')){
                       newItem.children.push(item2);
                       break;
                     }
@@ -209,7 +206,7 @@ export default {
         }
         if (!isAdd) {
           for (const key2 in item.permission) {
-            if (item.permission[key2] == this.userInfo.permission) {
+            if (item.permission[key2] == this.userInfo('permission')) {
               if(item.children!=null){
               const children = item.children;
               var newItem = {};
@@ -221,7 +218,7 @@ export default {
                 const item2 = children[key3]
                 var isAdd2 = false
                 for(const key4 in item2.identity){
-                  if(item2.identity[key4]==this.userInfo.identity){
+                  if(item2.identity[key4]==this.userInfo('identity')){
                     newItem.children.push(item2);
                     isAdd2 = true
                     break;
@@ -229,7 +226,7 @@ export default {
                 }
                 if(!isAdd2){
                   for(const key4 in item2.permission){
-                    if(item2.permission[key4]==this.userInfo.permission){
+                    if(item2.permission[key4]==this.userInfo('permission')){
                       newItem.children.push(item2);
                       break;
                     }
@@ -255,6 +252,9 @@ export default {
     this.$emit("changeAsideHeight", this.$refs.aside.offsetHeight);
   },
   methods: {
+    userInfo(str) {
+      return localStorage.getItem(str);
+    },
     handleOpen() {
       var that = this;
       setTimeout(function () {

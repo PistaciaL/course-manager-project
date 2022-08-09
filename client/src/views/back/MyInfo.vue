@@ -20,7 +20,7 @@
         <el-form-item label="头像">
           <el-upload
             class="avatar-uploader"
-            action="http://localhost:8081/"
+            :action="uploadAvatarUrl"
             :show-file-list="false"
             :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
@@ -31,7 +31,7 @@
           <div
             v-show="
               this.newUserInfo.avatar != '' &&
-              this.newUserInfo.avatar != this.userInfo.avatarUrl
+              this.newUserInfo.avatar != userInfo('avatarUrl')
             "
             class="avatar-icon-group"
           >
@@ -53,7 +53,7 @@
       <el-form ref="nameform" :model="newUserInfo" label-width="160px">
         <el-form-item label="姓名" class="form-item">
           <el-input
-            :placeholder="userInfo.name"
+            :placeholder="userInfo('name')"
             v-model="newUserInfo.name"
             :disabled="changingItem != 'name'"
           >
@@ -97,7 +97,7 @@
           prop="oldPhone"
         >
           <el-input
-            :placeholder="userInfo.phone"
+            :placeholder="userInfo('phone')"
             v-model="newUserInfo.oldPhone"
             :disabled="changingItem != 'phone'"
             oninput="value=value.replace(/[^\d]/g,'')"
@@ -194,7 +194,7 @@
           prop="passwd"
         >
           <el-input
-            :placeholder="userInfo.passwd"
+            :placeholder="userInfo('passwd')"
             v-model="newUserInfo.passwd"
             :disabled="changingItem != 'passwd'"
             show-password
@@ -244,6 +244,7 @@
 </template>
 
 <script>
+import MyUtils from '@/utils/myUtils';
 export default {
   data() {
     const checkPhone = (rule, value, callback) => {
@@ -334,26 +335,27 @@ export default {
       lastItemName: "",
     };
   },
-  computed: {
-    userInfo() {
-      return this.$store.state.userInfo;
-    },
+  computed:{
+    uploadAvatarUrl(){
+      return MyUtils.uploadAvatarUrl()
+    }
   },
   methods: {
+    userInfo(str) {
+      return localStorage.getItem(str);
+    },
     handleAvatarSuccess(res, file) {
-      console.log("返回保存的头像url");
-      this.newUserInfo.avatar = res.imgUrl;
-      this.cacheImageUrl = URL.createObjectURL(file.raw);
+      this.newUserInfo.avatar = res.data;
+      this.cacheImageUrl = URL.createObjectURL(file.raw)
     },
     beforeAvatarUpload(file) {
-      const correctType =
-        file.type === "image/jpeg" || file.type === "image/png";
+      const correctType = file.type === 'image/jpeg' || file.type === 'image/png';
       const isLt2M = file.size / 1024 / 1024 < 2;
       if (!correctType) {
-        this.$message.error("上传头像图片只能是 JPG 格式!");
+        this.$message.error('上传头像图片只能是 JPG 格式!');
       }
       if (!isLt2M) {
-        this.$message.error("上传头像图片大小不能超过 2MB!");
+        this.$message.error('上传头像图片大小不能超过 2MB!');
       }
       return correctType && isLt2M;
     },
@@ -411,11 +413,22 @@ export default {
       });
     },
     submitAvatar() {
-      console.log("提交新头像");
+      this.axios({
+        method:'post',
+        url:'/user/avatar',
+        params:{
+          avatarUrl:this.newUserInfo.avatar
+        }
+      }).then(res=>{
+        if(res.data.code==200){
+          this.MyUtils.fillLocalStorage(localStorage.getItem('token'))
+          this.$router.go(0)
+        }
+      })
     },
     refreshAvatar() {
       this.newUserInfo.avatar = "";
-      this.cacheImageUrl = this.userInfo.avatarUrl;
+      this.cacheImageUrl = MyUtils.avatarUrl(this.userInfo('avatarUrl'));
     },
     refreshPasswd() {
       this.$refs["passwdform"].resetFields();
@@ -450,7 +463,7 @@ export default {
     },
   },
   mounted() {
-    this.cacheImageUrl = this.userInfo.avatarUrl;
+    this.cacheImageUrl = MyUtils.avatarUrl(this.userInfo('avatarUrl'));
   },
   watch: {
     changingItem: {

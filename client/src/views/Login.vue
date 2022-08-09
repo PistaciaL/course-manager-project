@@ -19,7 +19,7 @@
         </div>
       </div>
       <div class="block">
-        <el-carousel height="640px" trigger="click" arrow="never" indicator-position="none" :interval="10000">
+        <el-carousel height="640px" trigger="click" arrow="never" indicator-position="none" :interval="6000">
           <el-carousel-item v-for="item in 4" :key="item">
             <h3 class="small">{{ item }}</h3>
           </el-carousel-item>

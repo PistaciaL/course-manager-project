@@ -21,7 +21,7 @@ public class MyWebAppConfigurer implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new PermissionInterceptor())
                 .addPathPatterns("/**")
-                .excludePathPatterns("/login","/register");
+                .excludePathPatterns("/**/login","/**/login/**","/**/register/**", "/**/verifyCode/**","/**/avatar/**");
     }
 
     /**
@@ -31,9 +31,12 @@ public class MyWebAppConfigurer implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")
+                //是否发送Cookie
                 .allowCredentials(true)
-                .allowedMethods("GET", "PUSH", "PUT", "DELETE")
-                .maxAge(3600*24);
+                //放行哪些原始域
+                .allowedOrigins("*")
+                .allowedMethods(new String[]{"GET", "POST", "PUT", "DELETE"})
+                .allowedHeaders("*")
+                .exposedHeaders("*");
     }
 }
