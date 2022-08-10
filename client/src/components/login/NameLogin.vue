@@ -25,7 +25,6 @@
 </template>
 
 <script>
-import MyUtils from '@/utils/myUtils';
 export default {
   data(){
     return{
@@ -70,7 +69,6 @@ export default {
           }).then(res=>{
             if(res.data.code==200){
               if(this.form.rememberPasswd){
-                console.log("remember")
                 localStorage.setItem('password', this.RSA.encrypt(this.form.password));
               }
               this.MyUtils.fillLocalStorage(res.data.data)

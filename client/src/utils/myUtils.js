@@ -15,7 +15,7 @@ let MyUtils = {
         localStorage.setItem('name', jwt.name);
         localStorage.setItem('permission', jwt.permission);
         localStorage.setItem('identity', jwt.identity);
-        localStorage.setItem('phone', jwt.phone);
+        localStorage.setItem('phone', jwt.phone.substring(0, 3) + '****' + jwt.phone.substring(7));
         localStorage.setItem('workNumb', jwt.workNumb);
         localStorage.setItem('avatarUrl', jwt.avatarUrl);
     }

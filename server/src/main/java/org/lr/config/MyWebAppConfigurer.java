@@ -24,19 +24,21 @@ public class MyWebAppConfigurer implements WebMvcConfigurer {
                 .excludePathPatterns("/**/login","/**/login/**","/**/register/**", "/**/verifyCode/**","/**/avatar/**");
     }
 
-    /**
-     * 跨域问题处理
-     * @param registry
-     */
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                //是否发送Cookie
-                .allowCredentials(true)
-                //放行哪些原始域
-                .allowedOrigins("*")
-                .allowedMethods(new String[]{"GET", "POST", "PUT", "DELETE"})
-                .allowedHeaders("*")
-                .exposedHeaders("*");
-    }
+    //自定义interceptor后,由于请求经过的先后顺序,请求先进入interceptor中导致跨域配置失效.
+    //因此使用CorsConfig过滤器解决跨域问题
+//    /**
+//     * 跨域问题处理
+//     * @param registry
+//     */
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
+//        registry.addMapping("/**")
+//                //是否发送Cookie
+//                .allowCredentials(true)
+//                //放行哪些原始域
+//                .allowedOrigins("*")
+//                .allowedMethods(new String[]{"GET", "POST", "PUT", "DELETE"})
+//                .allowedHeaders("*")
+//                .exposedHeaders("*");
+//    }
 }

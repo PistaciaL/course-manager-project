@@ -5,6 +5,7 @@ import Back from '@/views/back/Back'
 import Login from '@/views/Login'
 import Register from '@/views/Register'
 import Home from '@/views/Home'
+import jwtDecode from 'jwt-decode'
 
 Vue.use(VueRouter)
 
@@ -277,9 +278,21 @@ const isSchoolManager = () => {
 
 
 router.beforeResolve((to, from, next) => {
-    if ((to.fullPath == '/' || to.fullPath.substr(0, 5) == '/back') && !localStorage.getItem('isLogin')) {
+    const token = localStorage.getItem('token')
+    if (token != null) {
+        const jwt = jwtDecode(localStorage.getItem('token'))
+        if (jwt.exp < Math.round(new Date() / 1000)) {
+            const username = localStorage.getItem('workNumb')
+            let phone = localStorage.getItem('phone')
+            localStorage.clear()
+            localStorage.setItem('workNumb', username)
+            localStorage.setItem('phone', phone.substring(0, 3) + '****' + phone.substring(7))
+            next('/login')
+        }
+    }
+    if ((to.fullPath == '/' || to.fullPath.substr(0, 5) == '/back') && (localStorage.getItem('isLogin') == null || localStorage.getItem('isLogin') == 'false')) {
         next('/login')
-    } else if ((to.fullPath == '/login' || to.fullPath == '/register') && localStorage.getItem('isLogin')) {
+    } else if ((to.fullPath == '/login' || to.fullPath == '/register') && localStorage.getItem('isLogin') == 'true') {
         next('/')
     } else {
         next()

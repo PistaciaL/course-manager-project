@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.StringUtils;
 import org.lr.dto.ChangeAvatarDto;
 import org.lr.dto.ChangePasswdDto;
+import org.lr.dto.ChangePhoneDto;
 import org.lr.dto.LoginDto;
 import org.lr.entity.User;
 import org.lr.handler.MyException;
@@ -50,6 +51,9 @@ public class UserService extends ServiceImpl<UserMapper, User> {
             throw new MyException("验证码错误");
         }
         String password = userMapper.selectPasswdById(dto.getNumb());
+        if(password==null){
+            throw new MyException("用户不存在");
+        }
         log.info(RSAUtil.decrypt(dto.getPassword()));
         log.info(RSAUtil.decrypt(password));
         if(!StringUtils.equals(RSAUtil.decrypt(password),RSAUtil.decrypt(dto.getPassword()))){
@@ -66,7 +70,24 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         return userMapper.selectById(id);
     }
 
-    public boolean verifyPasswd(ChangePasswdDto dto) {
-        return false;
+    @Transactional
+    public boolean changePasswd(ChangePasswdDto dto) throws Exception {
+        String passwd = userMapper.selectPasswdById(dto.getUserId());
+        if(StringUtils.equals(RSAUtil.decrypt(dto.getOldPasswd()), RSAUtil.decrypt(passwd))){
+            return userMapper.updatePasswdById(dto)==1;
+        } else {
+            throw new MyException("密码错误");
+        }
+    }
+
+    public boolean changePhone(ChangePhoneDto dto) throws MyException {
+        if(!verificationCodeService.verifyPhoneCode(dto.getOriginPhone(), dto.getOriginCode())){
+            throw new MyException("验证码错误或过期");
+        }
+        if(!verificationCodeService.verifyPhoneCode(dto.getNewPhone(), dto.getNewCode())){
+            throw new MyException("验证码错误或过期");
+        }
+        int i = userMapper.updatePhone(dto);
+        return i==1;
     }
 }

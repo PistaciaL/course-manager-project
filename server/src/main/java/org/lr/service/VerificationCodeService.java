@@ -33,12 +33,12 @@ public class VerificationCodeService {
         if(redisTemplate.getExpire(phoneCodeKey(phone))>9*60){
             return false;
         }
-        redisTemplate.opsForValue().set(phoneCodeKey(phone), code, 10, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(phoneCodeKey(phone), code.toLowerCase(), 10, TimeUnit.MINUTES);
         return PhoneCodeUtil.sendPhoneCode(phone, code);
     }
 
     public boolean verifyPhoneCode(String phone, String code){
-        if(StringUtils.equals((String) redisTemplate.opsForValue().get(phoneCodeKey(phone)),code)){
+        if(StringUtils.equals((String) redisTemplate.opsForValue().get(phoneCodeKey(phone)),code.toLowerCase())){
             redisTemplate.delete(phoneCodeKey(phone));
             return true;
         }

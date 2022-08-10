@@ -1,7 +1,7 @@
 <template>
   <el-form ref="form" :model="form" :rules="rules" label-position="top" class="form">
     <el-form-item class="form-item" prop="phone">
-      <el-input v-model="form.phone" placeholder="请输入手机号" oninput="value=value.replace(/[^\d]/g,'')"></el-input>
+      <el-input v-model="form.phone" :placeholder="phonePlaceHold==null?'请输入手机号':phonePlaceHold" oninput="value=value.replace(/[^\d]/g,'')"></el-input>
     </el-form-item>
     <el-form-item class="form-item" prop="vCode">
       <el-input v-model="form.vCode" placeholder="请输入验证码" class="verification-input"></el-input>
@@ -36,7 +36,7 @@ export default {
     }
     return {
       form: {
-        phone: localStorage.getItem('phone'),
+        phone: '',
         vCode: ''
       },
       rules: {
@@ -49,6 +49,7 @@ export default {
           { len: 6, message: '请输入正确验证码', trigger: 'blur' }
         ]
       },
+      phonePlaceHold:localStorage.getItem('phone'),
       btnContainer: '发送验证码',
       isSend: false,
       btnDisabled: true
@@ -106,6 +107,14 @@ export default {
         } else{
           this.$message.error('发送失败,请稍后再试');
         }
+      }, error=>{
+        this.btnContainer="发送验证码"
+        this.isSend=false
+        this.btnDisabled=false
+        this.$message({
+          message:"发送失败,请稍后再试",
+          type:'error'
+        })
       })
     },
     changeBtnText() {

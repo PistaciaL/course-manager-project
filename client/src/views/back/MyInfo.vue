@@ -137,13 +137,13 @@
             v-model="newUserInfo.oldVerCode"
             maxlength="6"
             show-word-limit
-            oninput="value=value.replace(/[^\d]/g,'')"
           ></el-input>
           <el-button
             @click="reGetVerificationCode(0)"
             :disabled="btnDisabled[0]"
             class="verification-btn"
             >{{ btnContainer[0] }}
+            <i class="el-icon-loading" v-if="btnContainer[0]==''"></i>
           </el-button>
         </el-form-item>
         <el-form-item
@@ -170,13 +170,13 @@
             v-model="newUserInfo.newVerCode"
             maxlength="6"
             show-word-limit
-            oninput="value=value.replace(/[^\d]/g,'')"
           ></el-input>
           <el-button
             @click="reGetVerificationCode(1)"
             :disabled="btnDisabled[1]"
             class="verification-btn"
             >{{ btnContainer[1] }}
+            <i class="el-icon-loading" v-if="btnContainer[1]==''"></i>
           </el-button>
         </el-form-item>
       </el-form>
@@ -194,7 +194,7 @@
           prop="passwd"
         >
           <el-input
-            :placeholder="userInfo('passwd')"
+            placeholder="******"
             v-model="newUserInfo.passwd"
             :disabled="changingItem != 'passwd'"
             show-password
@@ -245,6 +245,7 @@
 
 <script>
 import MyUtils from '@/utils/myUtils';
+import RSA from '@/utils/rsa';
 export default {
   data() {
     const checkPhone = (rule, value, callback) => {
@@ -368,11 +369,33 @@ export default {
       this.changingItem = "";
     },
     reGetVerificationCode(key) {
-      this.$set(this.btnContainer, key, 60);
+      this.$set(this.btnContainer, key, '');
       this.$set(this.isSend, key, true);
       this.$set(this.btnDisabled, key, true);
-      this.changeBtnText(key);
-      console.log("验证码发送");
+      this.axios({
+        method:'post',
+        url:'/verifyCode/getPhoneCode',
+        params:{
+          phoneNumb:key==0?this.newUserInfo.oldPhone:this.newUserInfo.newPhone
+        }
+      }).then(res=>{
+        if(res.data.code==200){
+          this.$set(this.btnContainer, key, 60);
+          this.$message({
+            message: "发送成功",
+            type: 'success'
+          });
+          this.changeBtnText(key)
+        } else {
+          this.$set(this.btnContainer, key, "发送验证码");
+          this.$set(this.isSend, key, false);
+          this.$set(this.btnDisabled, key, false);
+          this.$message({
+            message:"发送失败,请稍后再试",
+            type:'error'
+          })
+        }
+      })
     },
     changeBtnText(key) {
       setTimeout(() => {
@@ -403,10 +426,34 @@ export default {
     submitPhone() {
       this.$refs.phoneform.validate((valid) => {
         if (valid) {
-          console.log("提交新手机号表单");
+          this.axios({
+            method:'post',
+            url:'user/changePhone',
+            data:{
+              originPhone:this.newUserInfo.oldPhone,
+              originCode:this.newUserInfo.oldVerCode,
+              newPhone:this.newUserInfo.newPhone,
+              newCode:this.newUserInfo.newVerCode
+            }
+          }).then(res=>{
+            if(res.data.code==200){
+              this.$message({
+                message:'修改成功',
+                type:'success'
+              })
+              this.MyUtils.fillLocalStorage(localStorage.getItem('token'))
+              this.$router.go(0)
+              this.refreshPhone();
+            }else {
+              this.$message({
+                message:res.data.message,
+                type:'warning'
+              })
+            }
+          }, e=>{
+            this.$message.error(e.response.data.message)
+          })
           // if success
-          console.log("刷新userInfo");
-          this.refreshPhone();
         } else {
           return false;
         }
@@ -423,6 +470,7 @@ export default {
         if(res.data.code==200){
           this.MyUtils.fillLocalStorage(localStorage.getItem('token'))
           this.$router.go(0)
+          this.refreshAvatar()
         }
       })
     },
@@ -453,9 +501,24 @@ export default {
     submitPasswd() {
       this.$refs.passwdform.validate((valid) => {
         if (valid) {
-          console.log("提交新密码表单");
-          // if success
-          this.refreshPasswd();
+          this.axios({
+            method:'post',
+            url:'/user/changePasswd',
+            data:{
+              oldPasswd:RSA.encrypt(this.newUserInfo.passwd),
+              newPasswd:RSA.encrypt(this.newUserInfo.newPasswd)
+            }
+          }).then(res=>{
+            if(res.data.code==200){
+              localStorage.setItem('password',RSA.encrypt(this.newUserInfo.newPasswd))
+              this.refreshPasswd();
+            }
+          },error=>{
+            this.$message({
+            message: error.message,
+            type: 'warning'
+          });
+          })
         } else {
           return false;
         }

@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChangePasswdDto {
+public class ChangePhoneDto {
     private String userId;
-    private String oldPasswd;
-    private String newPasswd;
+    private String originPhone;
+    private String originCode;
+    private String newPhone;
+    private String newCode;
 }

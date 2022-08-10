@@ -34,6 +34,12 @@
     <update id="updateAvatarByUserId">
         update "user" set avatar=#{avatarName} where user_id=#{userId}
     </update>
+    <update id="updatePasswdById">
+        update "user" set password=#{newPasswd} where user_id=#{userId}
+    </update>
+    <update id="updatePhone">
+        update "user" set phone=#{newPhone} where user_id=#{userId} and phone=#{originPhone}
+    </update>
 
     <select id="selectById" resultMap="User">
         select

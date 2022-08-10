@@ -107,7 +107,11 @@ export default {
       }
     },
     logout() {
+      let phone = localStorage.getItem("phone")
+      let id = localStorage.getItem('workNumb')
       localStorage.clear();
+      localStorage.setItem('workNumb', id)
+      localStorage.setItem('phone', phone.substring(0, 3) + '****' + phone.substring(7))
       this.$router.push("/login");
     },
     handleAvatarCommand(command) {

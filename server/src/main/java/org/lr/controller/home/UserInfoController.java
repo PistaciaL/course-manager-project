@@ -4,9 +4,11 @@ import com.auth0.jwt.interfaces.Claim;
 import org.lr.api.Result;
 import org.lr.dto.ChangeAvatarDto;
 import org.lr.dto.ChangePasswdDto;
+import org.lr.dto.ChangePhoneDto;
 import org.lr.service.UserService;
 import org.lr.utils.JWTUtil;
 import org.lr.vo.ChangePasswdVo;
+import org.lr.vo.ChangePhoneVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,8 +43,26 @@ public class UserInfoController {
         Map<String, Claim> tokenMap = JWTUtil.verifyToken(token);
         String id = tokenMap.get("workNumb").asString();
         ChangePasswdDto dto = new ChangePasswdDto();
+        dto.setUserId(id);
         dto.setOldPasswd(vo.getOldPasswd());
         dto.setNewPasswd(vo.getNewPasswd());
-        boolean b = userService.verifyPasswd(dto);
+        boolean b = userService.changePasswd(dto);
+        if(b){
+            return Result.success();
+        }
+        return Result.fail();
+    }
+
+    @PostMapping("/changePhone")
+    public Result changePhone(@RequestBody ChangePhoneVo vo, HttpServletRequest request) throws Exception {
+        String token = request.getHeader("Authorization");
+        Map<String, Claim> tokenMap = JWTUtil.verifyToken(token);
+        String id = tokenMap.get("workNumb").asString();
+        ChangePhoneDto dto = new ChangePhoneDto(id, vo.getOriginPhone(), vo.getOriginCode(), vo.getNewPhone(), vo.getNewCode());
+        boolean b = userService.changePhone(dto);
+        if(b){
+            return Result.success();
+        }
+        return Result.fail("手机号与账户不匹配");
     }
 }
