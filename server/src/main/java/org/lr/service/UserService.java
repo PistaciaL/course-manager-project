@@ -4,19 +4,20 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.StringUtils;
-import org.lr.dto.ChangeAvatarDto;
-import org.lr.dto.ChangePasswdDto;
-import org.lr.dto.ChangePhoneDto;
-import org.lr.dto.LoginDto;
+import org.lr.dto.*;
 import org.lr.entity.User;
 import org.lr.handler.MyException;
 import org.lr.mapper.UserMapper;
 import org.lr.utils.RSAUtil;
+import org.lr.vo.PageInfoVo;
+import org.lr.vo.UserSimpleVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -27,7 +28,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     @Autowired
     private VerificationCodeService verificationCodeService;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean saveUser(User user) throws MyException {
         if(userMapper.selectCount(new QueryWrapper<User>().eq("phone", user.getPhone()))>0){
             throw new MyException("该手机号已被注册");
@@ -66,11 +67,12 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         return userMapper.updateAvatarByUserId(dto)==1;
     }
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public User selectById(Serializable id){
         return userMapper.selectById(id);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean changePasswd(ChangePasswdDto dto) throws Exception {
         String passwd = userMapper.selectPasswdById(dto.getUserId());
         if(StringUtils.equals(RSAUtil.decrypt(dto.getOldPasswd()), RSAUtil.decrypt(passwd))){
@@ -80,6 +82,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public boolean changePhone(ChangePhoneDto dto) throws MyException {
         if(!verificationCodeService.verifyPhoneCode(dto.getOriginPhone(), dto.getOriginCode())){
             throw new MyException("验证码错误或过期");
@@ -89,5 +92,17 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         }
         int i = userMapper.updatePhone(dto);
         return i==1;
+    }
+
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public PageInfoVo<UserSimpleVo> selectUserSimple(SearchPageSimpleDto dto){
+        List<UserSimpleVo> list = userMapper.selectUserSimple(dto);
+        Integer total = userMapper.selectUserSimpleCount(dto);
+        PageInfoVo<UserSimpleVo> vo = new PageInfoVo<>();
+        vo.setData(list);
+        vo.setCurrentPage(dto.getPage());
+        Long totalPage = total%dto.getPageSize()==0?total/dto.getPageSize():total/dto.getPageSize()+1;
+        vo.setTotalPage(totalPage);
+        return vo;
     }
 }

@@ -12,7 +12,7 @@ public class Notice {
     @TableField("notice_id")
     private Integer id;
     private NoticeEnum type;
-    private String content;
+    private Course course;
     private User receiveUser;
     private boolean isRead;
     @TableField(fill = FieldFill.INSERT)

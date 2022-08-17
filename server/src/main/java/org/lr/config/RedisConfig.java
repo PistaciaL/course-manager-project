@@ -25,7 +25,6 @@ public class RedisConfig {
         // Hash value序列化
         redisTemplate.setHashValueSerializer(new StringRedisSerializer());
         redisTemplate.setConnectionFactory(redisConnectionFactory);
-        redisTemplate.setEnableTransactionSupport(true);
         return redisTemplate;
     }
 }

@@ -12,16 +12,38 @@
           :remote-method="searchSubject"
           remote
           v-el-select-loadmore="loadSubject"
-          :loading="subjectLoading"
+          :loading="loading.subjectLoading"
           size="small"
           :clearable="true"
+          @clear="clearSubject"
         >
           <el-option
-            v-for="subject in subjects"
+            v-for="subject in subjectSearchInfo.data"
             :key="subject.id"
             :label="subject.name"
             :value="subject.id"
           >
+          </el-option>
+          <el-option
+            :disabled="true"
+            value="-1"
+            key="-1"
+            style="text-align: center"
+          >
+            <div
+              v-show="
+                subjectSearchInfo.currentPage < subjectSearchInfo.totalPage
+              "
+            >
+              <i class="el-icon-loading" /><span value="">加载中</span>
+            </div>
+            <div
+              v-show="
+                subjectSearchInfo.currentPage >= subjectSearchInfo.totalPage
+              "
+            >
+              <span value="">已经全部加载完毕</span>
+            </div>
           </el-option>
         </el-select>
       </div>
@@ -29,17 +51,43 @@
         <span>开设学院：</span
         ><el-select
           v-model="searchForm.collegeId"
-          placeholder=""
           filterable
+          placeholder=""
+          :remote-method="searchCollege"
+          remote
+          v-el-select-loadmore="loadCollege"
+          :loading="loading.collegeLoading"
           size="small"
           :clearable="true"
+          @clear="clearCollege"
         >
           <el-option
-            v-for="college in colleges"
+            v-for="college in collegeSearchInfo.data"
             :key="college.id"
             :label="college.name"
             :value="college.id"
           >
+          </el-option>
+          <el-option
+            :disabled="true"
+            value="-1"
+            key="-1"
+            style="text-align: center"
+          >
+            <div
+              v-show="
+                collegeSearchInfo.currentPage < collegeSearchInfo.totalPage
+              "
+            >
+              <i class="el-icon-loading" /><span value="">加载中</span>
+            </div>
+            <div
+              v-show="
+                collegeSearchInfo.currentPage >= collegeSearchInfo.totalPage
+              "
+            >
+              <span value="">已经全部加载完毕</span>
+            </div>
           </el-option>
         </el-select>
       </div>
@@ -51,19 +99,39 @@
           placeholder=""
           :remote-method="searchTeacher"
           remote
-          allow-create
-          default-first-option
           v-el-select-loadmore="loadTeacher"
-          :loading="teacherLoading"
+          :loading="loading.teacherLoading"
           size="small"
           :clearable="true"
+          @clear="clearTeacher"
         >
           <el-option
-            v-for="teacher in teachers"
+            v-for="teacher in teacherSearchInfo.data"
             :key="teacher.id"
             :label="teacher.name"
             :value="teacher.id"
           >
+          </el-option>
+          <el-option
+            :disabled="true"
+            value="-1"
+            key="-1"
+            style="text-align: center"
+          >
+            <div
+              v-show="
+                teacherSearchInfo.currentPage < teacherSearchInfo.totalPage
+              "
+            >
+              <i class="el-icon-loading" /><span value="">加载中</span>
+            </div>
+            <div
+              v-show="
+                teacherSearchInfo.currentPage >= teacherSearchInfo.totalPage
+              "
+            >
+              <span value="">已经全部加载完毕</span>
+            </div>
           </el-option>
         </el-select>
       </div>
@@ -71,79 +139,124 @@
         <span>开课学期：</span
         ><el-select
           v-model="searchForm.termId"
-          placeholder=""
           filterable
+          placeholder=""
+          :remote-method="searchTerm"
+          remote
+          v-el-select-loadmore="loadTerm"
+          :loading="loading.termLoading"
           size="small"
           :clearable="true"
+          @clear="clearTerm"
         >
           <el-option
-            v-for="term in terms"
+            v-for="term in termSearchInfo.data"
             :key="term.id"
             :label="term.name"
             :value="term.id"
           >
+            <span style="margin-right: 50px">{{ term.name }}</span>
+            <span style="font-size: 8px; color: #909399"
+              >{{ term.startDate }} - {{ term.endDate }}</span
+            >
+          </el-option>
+          <el-option
+            :disabled="true"
+            value="-1"
+            key="-1"
+            style="text-align: center"
+          >
+            <div v-show="termSearchInfo.currentPage < termSearchInfo.totalPage">
+              <i class="el-icon-loading" /><span value="">加载中</span>
+            </div>
+            <div
+              v-show="termSearchInfo.currentPage >= termSearchInfo.totalPage"
+            >
+              <span value="">已经全部加载完毕</span>
+            </div>
           </el-option>
         </el-select>
       </div>
     </div>
     <div class="table-container">
       <el-table :data="courses" style="width: 100%">
-        <el-table-column prop="id" label="课程序号" min-width="100">
+        <el-table-column prop="courseId" label="课程序号" min-width="80">
         </el-table-column>
-        <el-table-column label="科目名称" min-width="210">
+        <el-table-column label="科目名称" min-width="230" width="350">
           <div
             slot-scope="scope"
             @click="
               searchBy('subject', {
                 id: scope.row.subjectId,
-                name: scope.row.subject,
+                name: scope.row.subjectName,
               })
             "
           >
-            {{ scope.row.subject }}
+            {{ scope.row.subjectName }}
           </div>
         </el-table-column>
-        <el-table-column label="开课学院" min-width="200">
+        <el-table-column label="开课学院" min-width="130">
           <div
             slot-scope="scope"
             @click="
               searchBy('college', {
                 id: scope.row.collegeId,
-                name: scope.row.college,
+                name: scope.row.collegeName,
               })
             "
           >
-            {{ scope.row.college }}
+            {{ scope.row.collegeName }}
           </div>
         </el-table-column>
-        <el-table-column label="任课教师" min-width="150">
+        <el-table-column label="任课教师" min-width="100">
           <div
             slot-scope="scope"
             @click="
               searchBy('teacher', {
                 id: scope.row.teacherId,
-                name: scope.row.teacher,
+                name: scope.row.teacherName,
               })
             "
           >
-            {{ scope.row.teacher }}
+            {{ scope.row.teacherName }}
           </div>
         </el-table-column>
-        <el-table-column label="开课学期" min-width="200">
+        <el-table-column label="开课学期" min-width="140">
           <div
             slot-scope="scope"
             @click="
-              searchBy('term', { id: scope.row.termId, name: scope.row.term })
+              searchBy('term', {
+                id: scope.row.termId,
+                name: scope.row.termName,
+              })
             "
           >
-            {{ scope.row.term }}
+            {{ scope.row.termName }}
           </div>
         </el-table-column>
-        <el-table-column label="学生人数" min-width="100">
-          <div slot-scope="scope">
-            {{ scope.row.studentNumb }}/{{ scope.row.totalNumb }}
+        <el-table-column label="学生人数" width="200">
+          <div slot-scope="scope" style="text-align: center; width: 160px">
+            <el-progress
+              :show-text="false"
+              :status="
+                scope.row.studentNumb / scope.row.maxNumb > 1
+                  ? 'exception'
+                  : scope.row.studentNumb / scope.row.maxNumb > 0.7
+                  ? 'warning'
+                  : scope.row.studentNumb / scope.row.maxNumb < 0.5
+                  ? 'success'
+                  : null
+              "
+              :percentage="
+                scope.row.studentNumb / scope.row.maxNumb > 1
+                  ? 100
+                  : (scope.row.studentNumb / scope.row.maxNumb) * 100
+              "
+            ></el-progress>
+            <span>{{ scope.row.studentNumb }}/{{ scope.row.maxNumb }}</span>
           </div>
         </el-table-column>
+        <el-table-column label="课时数" min-width="80" prop="hour" align="center"></el-table-column>
       </el-table>
       <div class="page-divider">
         <el-pagination
@@ -183,14 +296,25 @@ export default {
           if (condition) {
             if (
               binding.expression == "loadTeacher" &&
-              that.teacherSearchInfo.currentPage <=
+              that.teacherSearchInfo.currentPage <
                 that.teacherSearchInfo.totalPage
             ) {
               binding.value();
             } else if (
               binding.expression == "loadSubject" &&
-              that.subjectSearchInfo.currentPage <=
+              that.subjectSearchInfo.currentPage <
                 that.subjectSearchInfo.totalPage
+            ) {
+              binding.value();
+            } else if (
+              binding.expression == "loadCollege" &&
+              that.collegeSearchInfo.currentPage <
+                that.collegeSearchInfo.totalPage
+            ) {
+              binding.value();
+            } else if (
+              binding.expression == "loadTerm" &&
+              that.termSearchInfo.currentPage < that.termSearchInfo.totalPage
             ) {
               binding.value();
             }
@@ -202,195 +326,205 @@ export default {
   data() {
     return {
       searchForm: {
-        collegeId: "",
-        teacherId: "",
-        subjectId: "",
-        termId: "",
+        collegeId: null,
+        teacherId: null,
+        subjectId: null,
+        termId: null,
       },
-      teacherSearchInfo: { input: "", currentPage: 1, totalPage: 10 },
-      subjectSearchInfo: { input: "", currentPage: 1, totalPage: 10 },
-      colleges: [
-        { id: 1, name: "计算机与科学学院" },
-        { id: 2, name: "软件学院" },
-        { id: 3, name: "微电子学院" },
-        { id: 4, name: "数学与统计学院" },
-      ],
-      teachers: [],
-      staticTeachers: [
-        { id: 123, name: "教师一" },
-        { id: 321, name: "教师二" },
-        { id: 312, name: "教师三" },
-        { id: 1123, name: "教师一" },
-        { id: 321231, name: "教师二" },
-        { id: 24, name: "教师三" },
-        { id: 12342323, name: "教师一" },
-        { id: 23423, name: "教师二" },
-        { id: 35435312, name: "教师三" },
-      ],
-      subjects: [],
-      staticSubjects: [
-        { id: 1, name: "科目1" },
-        { id: 2, name: "科目2" },
-        { id: 3, name: "科目3" },
-        { id: 4, name: "科目4" },
-        { id: 5, name: "科目5" },
-        { id: 6, name: "科目6" },
-        { id: 11, name: "科目11" },
-        { id: 12, name: "科目12" },
-        { id: 13, name: "科目13" },
-        { id: 14, name: "科目14" },
-        { id: 15, name: "科目15" },
-        { id: 16, name: "科目16" },
-      ],
-      terms: [
-        { id: 1, name: "2020年春学期" },
-        { id: 2, name: "2020年秋学期" },
-        { id: 3, name: "2021年春学期" },
-        { id: 4, name: "2021年秋学期" },
-        { id: 5, name: "2022年春学期" },
-        { id: 6, name: "2022年秋学期" },
-      ],
-      teacherLoading: false,
-      subjectLoading: false,
-      courses: [
-        {
-          id: 1312,
-          subjectId: 121,
-          subject: "高等数学",
-          collegeId: 1,
-          college: "数学与统计学院",
-          teacherId: 121,
-          teacher: "教师一",
-          termId: 1,
-          term: "2022年秋学期",
-          studentNumb: 30,
-          totalNumb: 50,
-        },
-        {
-          id: 13121,
-          subjectId: 121,
-          subject: "高等数学",
-          collegeId: 1,
-          college: "数学与统计学院",
-          teacherId: 121,
-          teacher: "教师一",
-          termId: 1,
-          term: "2022年秋学期",
-          studentNumb: 40,
-          totalNumb: 100,
-        },
-        {
-          id: 1312,
-          subjectId: 121,
-          subject: "高等数学",
-          collegeId: 1,
-          college: "数学与统计学院",
-          teacherId: 121,
-          teacher: "教师一",
-          termId: 1,
-          term: "2022年秋学期",
-          studentNumb: 100,
-          totalNumb: 100,
-        },
-        {
-          id: 1312,
-          subjectId: 12122,
-          subject: "面向对象的程序与设计",
-          collegeId: 2,
-          college: "软件学院",
-          teacherId: 12111,
-          teacher: "教师二",
-          termId: 2,
-          term: "2022年春学期",
-          studentNumb: 0,
-          totalNumb: 100,
-        },
-        {
-          id: 1312,
-          subjectId: 121,
-          subject: "高等数学",
-          collegeId: 1,
-          college: "数学与统计学院",
-          teacherId: 121,
-          teacher: "教师一",
-          termId: 1,
-          term: "2022年秋学期",
-          studentNumb: 100,
-          totalNumb: 100,
-        },
-      ],
+      cache: {
+        term: "",
+        college: "",
+        teacher: "",
+        subject: "",
+      },
+      loading: {
+        teacherLoading: false,
+        subjectLoading: false,
+        termLoading: false,
+        collegeLoading: false,
+      },
+      teacherSearchInfo: { data: "", currentPage: 0, totalPage: 1 },
+      subjectSearchInfo: { data: "", currentPage: 0, totalPage: 1 },
+      termSearchInfo: { data: "", currentPage: 0, totalPage: 1 },
+      collegeSearchInfo: { data: "", currentPage: 0, totalPage: 1 },
+      courses: [],
       pageInfo: {
-        currentPage: 4,
-        totalPage: 10,
-        pageSize: 20,
+        currentPage: 1,
+        totalPage: 1,
+        pageSize: 10,
       },
     };
   },
   mounted() {
-    console.log("加载学院列表");
-    console.log("加载学期列表");
+    this.selectCourse(1);
     that = this;
+    this.searchTerm("");
     this.searchTeacher("");
     this.searchSubject("");
+    this.searchCollege("");
+  },
+  watch: {
+    searchForm: {
+      handler(value) {
+        this.selectCourse(1);
+      },
+      deep: true,
+    },
   },
   methods: {
     searchTeacher(query) {
-      this.teacherLoading = true;
-      this.teacherSearchInfo = { input: "", currentPage: 0, totalPage: 10 };
-      this.teacherSearchInfo.input = query;
-      console.log("根据选择的学院远程搜索教师");
-      setTimeout(() => {
-        this.teacherLoading = false;
-        this.teachers = this.staticTeachers.filter((item) => {
-          return item.name.indexOf(query) > -1;
-        });
-      }, 1000);
+      this.teacherSearchInfo = { data: [], currentPage: 0, totalPage: 1 };
+      this.cache.teacher = query;
+      this.loading.teacherLoading = true;
+      this.loadTeacher();
+    },
+    clearTeacher(){
+      this.searchTeacher()
     },
     loadTeacher() {
-      console.log("输入的关键字" + this.teacherSearchInfo.input);
-      this.teachers.push({
-        id: "000" + this.teacherSearchInfo.currentPage,
-        name: this.teacherSearchInfo.input + this.teacherSearchInfo.currentPage,
+      const name = this.cache.teacher;
+      this.axios({
+        method: "get",
+        url: "/user/teacher/search",
+        params: {
+          name: name,
+          page: this.teacherSearchInfo.currentPage + 1,
+          pageSize: 10,
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          this.loading.teacherLoading = false;
+          this.teacherSearchInfo.data = this.teacherSearchInfo.data.concat(
+            res.data.data.data
+          );
+          this.teacherSearchInfo.currentPage = res.data.data.currentPage;
+          this.teacherSearchInfo.totalPage = res.data.data.totalPage;
+        }
       });
-      this.teacherSearchInfo.currentPage += 1;
     },
     searchSubject(query) {
-      this.subjectLoading = true;
-      this.subjectSearchInfo = { input: "", currentPage: 0, totalPage: 10 };
-      this.subjectSearchInfo.input = query;
-      console.log("根据选择的学院远程搜索教师");
-      setTimeout(() => {
-        this.subjectLoading = false;
-        this.subjects = this.staticSubjects.filter((item) => {
-          return item.name.indexOf(query) > -1;
-        });
-      }, 1000);
+      this.subjectSearchInfo = { data: [], currentPage: 0, totalPage: 1 };
+      this.cache.subject = query;
+      this.loading.subjectLoading = true;
+      this.loadSubject();
+    },
+    clearSubject(){
+      this.searchSubject()
     },
     loadSubject() {
-      console.log("输入的关键字" + this.subjectSearchInfo.input);
-      this.subjects.push({
-        id: "000" + this.subjectSearchInfo.currentPage,
-        name: this.subjectSearchInfo.input + this.subjectSearchInfo.currentPage,
+      const name = this.cache.subject;
+      this.axios({
+        method: "get",
+        url: "/subject/search",
+        params: {
+          name: name,
+          page: this.subjectSearchInfo.currentPage + 1,
+          pageSize: 10,
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          this.loading.subjectLoading = false;
+          this.subjectSearchInfo.data = this.subjectSearchInfo.data.concat(
+            res.data.data.data
+          );
+          this.subjectSearchInfo.currentPage = res.data.data.currentPage;
+          this.subjectSearchInfo.totalPage = res.data.data.totalPage;
+        }
       });
-      this.subjectSearchInfo.currentPage += 1;
+    },
+    searchCollege(query) {
+      this.collegeSearchInfo = { data: [], currentPage: 0, totalPage: 1 };
+      this.cache.college = query;
+      this.loading.collegeLoading = true;
+      this.loadCollege();
+    },
+    clearCollege(){
+      this.searchCollege()
+    },
+    loadCollege() {
+      const name = this.cache.college;
+      this.axios({
+        method: "get",
+        url: "/college/search",
+        params: {
+          name: name,
+          page: this.collegeSearchInfo.currentPage + 1,
+          pageSize: 10,
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          this.loading.collegeLoading = false;
+          this.collegeSearchInfo.data = this.collegeSearchInfo.data.concat(
+            res.data.data.data
+          );
+          this.collegeSearchInfo.currentPage = res.data.data.currentPage;
+          this.collegeSearchInfo.totalPage = res.data.data.totalPage;
+        }
+      });
+    },
+    searchTerm(query) {
+      this.termSearchInfo = { data: [], currentPage: 0, totalPage: 1 };
+      this.cache.term = query;
+      this.loading.termLoading = true;
+      this.loadTerm();
+    },
+    clearTerm(){
+      this.searchTerm()
+    },
+    loadTerm() {
+      const name = this.cache.term;
+      this.axios({
+        method: "get",
+        url: "/term/search",
+        params: {
+          name: name,
+          page: this.termSearchInfo.currentPage + 1,
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          this.loading.termLoading = false;
+          this.termSearchInfo.data = this.termSearchInfo.data.concat(
+            res.data.data.data
+          );
+          this.termSearchInfo.currentPage = res.data.data.currentPage;
+          this.termSearchInfo.totalPage = res.data.data.totalPage;
+        }
+      });
     },
     searchBy(name, data) {
-      for (const key in this.searchForm) {
-        this.searchForm[key] = "";
-      }
       if (name == "teacher") {
-        this.teachers = [{ id: data.id, name: data.name }];
+        this.teacherSearchInfo = {data:[{ id: data.id, name: data.name }],currentPage:1,totalPage:1};
       } else if (name == "college") {
-        this.colleges = [{ id: data.id, name: data.name }];
+        this.collegeSearchInfo = {data:[{ id: data.id, name: data.name }],currentPage:1,totalPage:1};
       } else if (name == "term") {
-        this.terms = [{ id: data.id, name: data.name }];
+        this.termSearchInfo = {data:[{ id: data.id, name: data.name }],currentPage:1,totalPage:1};
       } else if (name == "subject") {
-        this.subjects = [{ id: data.id, name: data.name }];
+        this.subjectSearchInfo = {data:[{ id: data.id, name: data.name }],currentPage:1,totalPage:1};
       }
       this.$set(this.searchForm, name + "Id", data.id);
     },
+    selectCourse(page) {
+      this.axios({
+        method: "get",
+        url: "/course/searchAll",
+        params: {
+          subjectId: this.searchForm.subjectId,
+          collegeId: this.searchForm.collegeId,
+          teacherId: this.searchForm.teacherId,
+          termId: this.searchForm.termId,
+          page: page,
+          pageSize: this.pageInfo.pageSize,
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          this.courses = res.data.data.data;
+          this.pageInfo.currentPage = res.data.data.currentPage;
+          this.pageInfo.totalPage = res.data.data.totalPage;
+        }
+      });
+    },
     changePage(newPage) {
-      console.log(newPage);
+      this.selectCourse(newPage);
     },
   },
 };
@@ -414,7 +548,7 @@ export default {
 .search-group span {
   padding: 0 10px;
 }
-.search-item{
+.search-item {
   display: flex;
   align-items: center;
 }

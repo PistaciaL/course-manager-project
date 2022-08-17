@@ -3,6 +3,7 @@ package org.lr.service;
 import org.lr.handler.MyException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.util.ArrayList;

@@ -1,11 +1,10 @@
-package org.lr.vo;
+package org.lr.vo.basic;
 
 import lombok.Data;
 
 @Data
-public class NameLoginVo {
+public class UsernameLoginVo {
     private String name;
     private String password;
-    private String codeId;
     private String code;
 }

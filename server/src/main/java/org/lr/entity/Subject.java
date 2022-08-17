@@ -6,10 +6,10 @@ import lombok.Data;
 
 @Data
 public class Subject {
-    @TableId(type = IdType.AUTO)
-    private Integer subjectId;
+    @TableId(value = "subject_id", type = IdType.AUTO)
+    private Integer id;
     private String name;
     private College college;
     private Integer lessonHour;
-    private Integer credit;
+    private Float credit;
 }

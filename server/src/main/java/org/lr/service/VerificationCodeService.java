@@ -3,11 +3,13 @@ package org.lr.service;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.StringUtils;
 import org.lr.dto.PicCodeDto;
-import org.lr.vo.PicCodeVo;
 import org.lr.utils.PicCodeUtils;
 import org.lr.utils.PhoneCodeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
@@ -38,11 +40,17 @@ public class VerificationCodeService {
     }
 
     public boolean verifyPhoneCode(String phone, String code){
-        if(StringUtils.equals((String) redisTemplate.opsForValue().get(phoneCodeKey(phone)),code.toLowerCase())){
-            redisTemplate.delete(phoneCodeKey(phone));
-            return true;
-        }
-        return false;
+        return Boolean.TRUE.equals(redisTemplate.execute(new SessionCallback<Boolean>() {
+            @Override
+            public Boolean execute(RedisOperations operations) throws DataAccessException {
+                if (StringUtils.equals((String) redisTemplate.opsForValue().get(phoneCodeKey(phone)), code.toLowerCase())) {
+                    redisTemplate.delete(phoneCodeKey(phone));
+                    return true;
+                }
+                return false;
+            }
+        }));
+
     }
 
     public PicCodeDto sendPicCode() throws IOException {
@@ -56,11 +64,17 @@ public class VerificationCodeService {
     }
 
     public boolean verifyPicCode(String codeId, String code){
-        if(StringUtils.equals(redisTemplate.opsForValue().get(picCodeKey(codeId)).toString(),code.toLowerCase())){
-            redisTemplate.delete(picCodeKey(codeId));
-            return true;
-        }
-        return false;
+        return Boolean.TRUE.equals(redisTemplate.execute(new SessionCallback<Boolean>() {
+            @Override
+            public Boolean execute(RedisOperations operations) throws DataAccessException {
+                if(StringUtils.equals(redisTemplate.opsForValue().get(picCodeKey(codeId)).toString(),code.toLowerCase())){
+                    redisTemplate.delete(picCodeKey(codeId));
+                    return true;
+                }
+                return false;
+            }
+        }));
+
     }
 
     private String randomGetCode(){

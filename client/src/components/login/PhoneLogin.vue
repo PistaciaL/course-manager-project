@@ -52,7 +52,7 @@ export default {
       phonePlaceHold:localStorage.getItem('phone'),
       btnContainer: '发送验证码',
       isSend: false,
-      btnDisabled: true
+      btnDisabled: true,
     }
   },
   methods: {
@@ -69,6 +69,7 @@ export default {
           }).then(res=>{
             if(res.data.code==200){
               this.MyUtils.fillLocalStorage(res.data.data)
+              clearInterval(this.interval)
               this.$router.push("/")
             } else {
               this.$message({
@@ -105,6 +106,9 @@ export default {
             type: 'success'
           });
         } else{
+          this.btnContainer="发送验证码"
+          this.isSend=false
+          this.btnDisabled=false
           this.$message.error('发送失败,请稍后再试');
         }
       }, error=>{
@@ -118,19 +122,15 @@ export default {
       })
     },
     changeBtnText() {
-      setTimeout(() => {
-        if (that.btnContainer == '发送验证码') {
-          that.btnContainer = 59
-          that.changeBtnText()
-        } else {
+      this.interval = setInterval(() => {
+        if (that.btnContainer != '发送验证码') {
           that.btnContainer = that.btnContainer - 1
           if (that.btnContainer != -1) {
-            that.changeBtnText()
           } else {
             that.btnContainer = '发送验证码'
             that.isSend = false
             this.verifyPhone(this.form.phone)
-
+            clearInterval(this.interval)
           }
         }
       }, 1000)

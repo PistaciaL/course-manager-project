@@ -1,26 +1,49 @@
 <template>
   <div class="form">
-    <div class="term-select">
-      <span>选择学期：</span>
-      <el-select
-        v-model="term"
-        filterable
-        remote
-        reserve-keyword
-        :remote-method="searchItems"
-        :loading="loading"
-        size="small"
-      >
-        <el-option
-          v-for="item in terms"
-          :key="item.id"
-          :label="item.name"
-          :value="item.id"
+    <div class="form-header">
+      <div class="term-select">
+        <span>选择学期：</span>
+        <el-select
+          v-model="termId"
+          :remote-method="searchTerm"
+          placeholder=""
+          :loading="loading"
+          filterable
+          remote
+          v-el-select-loadmore="loadTerm"
+          :clearable="true"
+          size="small"
+          @change="selectCourse(1)"
+          @clear="clearTerm"
         >
-        </el-option>
-      </el-select>
+          <el-option
+            v-for="term in terms.data"
+            :key="term.id"
+            :label="term.name"
+            :value="term.id"
+          >
+          <span style="margin-right:50px">{{term.name}}</span>
+          <span style="float:right;font-size:8px;color:#909399;">{{term.startDate}} - {{term.endDate}}</span>
+          </el-option>
+          <el-option
+            :disabled="true"
+            value="-1"
+            key="-1"
+            style="text-align: center"
+          >
+            <div v-show="terms.currentPage < terms.totalPage">
+              <i class="el-icon-loading" /><span value="">加载中</span>
+            </div>
+            <div v-show="terms.currentPage >= terms.totalPage">
+              <span value="">已经全部加载完毕</span>
+            </div>
+          </el-option>
+        </el-select>
+      </div>
+      <div><el-button @click="addCourseBtn">注册课程</el-button></div>
     </div>
-    <table cellspacing="0px" class="outer-table">
+    <CourseAddForm ref="addForm" /> 
+    <table cellspacing="0px" class="outer-table" v-if="courses.data.length!=0">
       <thead>
         <tr class="outer-head">
           <th style="min-width: 206px">科目名称</th>
@@ -33,25 +56,46 @@
         </tr>
       </thead>
       <tbody class="outer-body">
-        <tr v-for="course in courses" :key="course.id">
+        <tr v-for="course in courses.data" :key="course.id">
           <td>{{ course.name }}</td>
           <td style="text-align: center">{{ course.id }}</td>
           <td style="text-align: center">{{ course.hour }}</td>
           <td style="text-align: center">
-            {{ course.studentNumb }}/{{ course.totalNumb }}
+            <p>
+              <el-progress
+                :show-text="false"
+                :status="
+                  course.studentNumb / course.totalNumb > 1 ? 'warning' : null
+                "
+                :percentage="
+                  course.studentNumb / course.totalNumb > 1
+                    ? 100
+                    : (course.studentNumb / course.totalNumb) * 100
+                "
+              ></el-progress>
+            </p>
+            <span>{{ course.studentNumb }}/{{ course.totalNumb }}</span>
           </td>
           <td style="text-align: center">
             <el-button
               icon="el-icon-search"
               circle
               @click="showSchedule(course.id)"
+              v-if="schedules != null"
+            ></el-button>
+            <el-button
+              icon="el-icon-search"
+              circle
+              @click="showSchedule(course.id)"
+              v-else
+              disabled
             ></el-button>
           </td>
           <td style="text-align: center">
             <el-popover
               placement="right"
               trigger="hover"
-              v-if="course.exams != null"
+              v-if="course.exams.length!=0"
             >
               <el-table :data="course.exams">
                 <el-table-column
@@ -81,6 +125,18 @@
         </tr>
       </tbody>
     </table>
+    <el-empty description="这学期没有开设课程" v-else></el-empty>
+    <div class="page-divider">
+      <el-pagination
+        layout="prev, pager, next"
+        :page-count="courses.totalPage"
+        :page-size="courses.pageSize"
+        :current-page.sync="courses.currentPage"
+        :hide-on-single-page="true"
+        @current-change="changePage"
+      >
+      </el-pagination>
+    </div>
     <el-dialog title="排课时间" :visible.sync="scheduleIsShow">
       <el-calendar>
         <template slot="dateCell" slot-scope="data">
@@ -106,7 +162,7 @@
             :min="0"
             :max="4"
             controls-position="right"
-            size='small'
+            size="small"
           ></el-input-number>
           小时
           <el-input-number
@@ -117,152 +173,59 @@
             :step="10"
             step-strictly
             controls-position="right"
-            size='small'
+            size="small"
           ></el-input-number>
           分钟
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="addExam"
-          >添加考试</el-button
-        >
+        <el-button type="primary" @click="addExam">添加考试</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
+import CourseAddForm from "./CourseAddForm.vue";
+var that;
 export default {
+  components: { CourseAddForm },
+  directives: {
+    "el-select-loadmore": {
+      bind(el, binding) {
+        // 获取element-ui定义好的scroll盒子
+        const SELECTWRAP_DOM = el.querySelector(
+          ".el-select-dropdown .el-select-dropdown__wrap"
+        );
+        SELECTWRAP_DOM.addEventListener("scroll", function () {
+          /**
+           * scrollHeight 获取元素内容高度(只读)
+           * scrollTop 获取或者设置元素的偏移值,常用于, 计算滚动条的位置, 当一个元素的容器没有产生垂直方向的滚动条, 那它的scrollTop的值默认为0.
+           * clientHeight 读取元素的可见高度(只读)
+           * 如果元素滚动到底, 下面等式返回true, 没有则返回false:
+           * ele.scrollHeight - ele.scrollTop === ele.clientHeight;
+           */
+          const condition =
+            this.scrollHeight - this.scrollTop <= this.clientHeight;
+          if (condition) {
+            if (
+              binding.expression == "loadTerm" &&
+              that.terms.currentPage < that.terms.totalPage
+            ) {
+              binding.value();
+            }
+          }
+        });
+      },
+    },
+  },
   data() {
     return {
-      activeNames: [],
-      term: "",
-      terms: [
-        { id: 1, name: "2020年春学期" },
-        { id: 2, name: "2020年秋学期" },
-        { id: 3, name: "2021年春学期" },
-        { id: 4, name: "2021年秋学期" },
-        { id: 5, name: "2022年春学期" },
-        { id: 6, name: "2022年秋学期" },
-      ],
+      termId: null,
+      cacheTerm: "",
+      terms: { data: [], currentPage: 0, totalPage: 1 },
       loading: false,
-      courses: [
-        {
-          id: 12351,
-          name: "高等数学",
-          hour: 64,
-          studentNumb: 45,
-          totalNumb: 100,
-          mark: "已发布",
-          exams: [
-            {
-              id: 1,
-              startTime: "2022/07/26 16:00",
-              room: ["教学西楼A201", "教学西楼A203"],
-            },
-            {
-              id: 2,
-              startTime: "2022/05/04 14:00",
-              room: ["教学西楼A201", "教学西楼A203"],
-            },
-          ],
-        },
-        {
-          id: 46512,
-          name: "大学物理",
-          hour: 48,
-          studentNumb: 80,
-          totalNumb: 120,
-          mark: "已发布",
-          exams: [
-            {
-              id: 3,
-              startTime: "2022/05/04 14:00",
-              room: ["教学西楼A201", "教学西楼A203"],
-            },
-          ],
-        },
-        {
-          id: 12315,
-          name: "离散数学",
-          hour: 48,
-          studentNumb: 45,
-          totalNumb: 100,
-          mark: "未发布",
-        },
-        {
-          id: 89456,
-          name: "面向对象的程序与设计",
-          hour: 48,
-          studentNumb: 45,
-          totalNumb: 100,
-          mark: "未发布",
-        },
-        {
-          id: 12311,
-          name: "面向对象的程序与设计",
-          hour: 48,
-          studentNumb: 45,
-          totalNumb: 100,
-          mark: "未发布",
-        },
-        {
-          id: 43241,
-          name: "面向对象的程序与设计",
-          hour: 48,
-          studentNumb: 45,
-          totalNumb: 100,
-          mark: "未发布",
-        },
-        {
-          id: 46534,
-          name: "面向对象的程序与设计",
-          hour: 48,
-          studentNumb: 45,
-          totalNumb: 100,
-          mark: "未发布",
-        },
-        {
-          id: 31245,
-          name: "面向对象的程序与设计",
-          hour: 48,
-          studentNumb: 45,
-          totalNumb: 100,
-          mark: "未发布",
-        },
-        {
-          id: 98156,
-          name: "面向对象的程序与设计",
-          hour: 48,
-          studentNumb: 45,
-          totalNumb: 100,
-          mark: "未发布",
-        },
-        {
-          id: 89523,
-          name: "面向对象的程序与设计",
-          hour: 48,
-          studentNumb: 45,
-          totalNumb: 100,
-          mark: "未发布",
-        },
-        {
-          id: 17895,
-          name: "面向对象的程序与设计",
-          hour: 48,
-          studentNumb: 45,
-          totalNumb: 100,
-          mark: "未发布",
-        },
-        {
-          id: 81569,
-          name: "面向对象的程序与设计",
-          hour: 48,
-          studentNumb: 45,
-          totalNumb: 100,
-          mark: "未发布",
-        },
-      ],
+      courses: { data: [], currentPage: 0, totalPage: 1 },
       schedules: [
         [],
         [],
@@ -296,9 +259,66 @@ export default {
       },
     };
   },
+  mounted() {
+    that = this;
+    this.searchTerm("");
+    this.selectCourse(1);
+  },
   methods: {
-    addExam(){
-      console.log('添加考试')
+    selectCourse(page) {
+      this.axios({
+        method: "get",
+        url: "/course/search",
+        params: {
+          termId: this.termId,
+          page: page,
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          if (this.termId == null) {
+            //根据term分组(待定)
+            this.courses = res.data.data;
+          } else {
+            this.courses = res.data.data;
+          }
+        }
+      });
+    },
+    changePage(newPage) {
+      this.selectCourse(newPage)
+    },
+    searchTerm(query) {
+      this.terms = { data: [], currentPage: 0, totalPage: 1 };
+      this.cacheTerm = query;
+      this.loading = true;
+      this.loadTerm();
+    },
+    clearTerm(){
+      this.searchTerm()
+    },
+    loadTerm() {
+      const name = this.cacheTerm;
+      this.axios({
+        method: "get",
+        url: "/term/search",
+        params: {
+          name: name,
+          page: this.terms.currentPage + 1,
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          this.loading = false;
+          this.terms.data = this.terms.data.concat(res.data.data.data);
+          this.terms.currentPage = res.data.data.currentPage;
+          this.terms.totalPage = res.data.data.totalPage;
+        }
+      });
+    },
+    addExam() {
+      console.log("添加考试");
+    },
+    addCourseBtn() {
+      this.$refs.addForm.addCourseFormShow = true;
     },
     addExamChangeMinute(currentValue) {
       if (currentValue < 0) {
@@ -309,8 +329,8 @@ export default {
         this.addExamForm.stillMinute = 0;
       }
     },
-    addExamChangeHour(currentValue){
-      if(currentValue ==4){
+    addExamChangeHour(currentValue) {
+      if (currentValue == 4) {
         this.addExamForm.stillMinute = 0;
       }
     },
@@ -334,10 +354,6 @@ export default {
           return daySchedule.startHour + "-" + daySchedule.endHour + "节";
         }
       }
-    },
-    searchItems(query) {
-      this.loading = true;
-      console.log("根据" + query + "搜索学期");
     },
     searchMark(id) {
       console.log("跳转到成绩详情页面,课程id" + id);
@@ -402,11 +418,20 @@ export default {
 td {
   padding: 0 10px;
 }
-
-.term-select{
-  margin-left: 50px;
-}
-.el-input-number{
+.el-input-number {
   width: 100px;
+}
+
+.form-header {
+  display: flex;
+  margin: 0 150px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-divider {
+  float: right;
+  margin-top: 10px;
+  margin-right: 30px;
 }
 </style>

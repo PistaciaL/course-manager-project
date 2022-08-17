@@ -64,4 +64,18 @@
     <select id="selectPasswdById" resultType="java.lang.String">
         select password from "user" where user_id=#{numb}
     </select>
+    <select id="selectUserSimple" resultType="org.lr.vo.UserSimpleVo">
+        select user_id as id, name from "user"
+        <where>
+            <if test="name!=null">and name like concat('%',#{name},'%')</if>
+        </where>
+        limit #{pageSize} offset ${(page - 1) * pageSize}
+    </select>
+
+    <select id="selectUserSimpleCount" resultType="java.lang.Integer">
+        select count(*) from "user"
+        <where>
+            <if test="name!=null">and name like concat('%',#{name},'%')</if>
+        </where>
+    </select>
 </mapper>

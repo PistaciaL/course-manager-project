@@ -9,42 +9,74 @@
     <div class="term-select">
       <span>选择学期：</span>
       <el-select
-        v-model="term"
-        filterable
-        remote
-        reserve-keyword
-        :remote-method="searchItems"
-        :loading="termLoading"
-        size="small"
-      >
-        <el-option
-          v-for="item in terms"
-          :key="item.id"
-          :label="item.name"
-          :value="item.id"
+          v-model="termId"
+          :remote-method="searchTerm"
+          placeholder=""
+          :loading="termLoading"
+          filterable
+          remote
+          v-el-select-loadmore="loadTerm"
+          :clearable="true"
+          size="small"
+          @change="selectCourse(1)"
+          @clear="clearTerm"
         >
-        </el-option>
-      </el-select>
+          <el-option
+            v-for="term in terms.data"
+            :key="term.id"
+            :label="term.name"
+            :value="term.id"
+          >
+          <span style="margin-right:50px">{{term.name}}</span>
+          <span style="float:right;font-size:8px;color:#909399;">{{term.startDate}} - {{term.endDate}}</span>
+          </el-option>
+          <el-option
+            :disabled="true"
+            value="-1"
+            key="-1"
+            style="text-align: center"
+          >
+            <div v-show="terms.currentPage < terms.totalPage">
+              <i class="el-icon-loading" /><span value="">加载中</span>
+            </div>
+            <div v-show="terms.currentPage >= terms.totalPage">
+              <span value="">已经全部加载完毕</span>
+            </div>
+          </el-option>
+        </el-select>
     </div>
     <div class="table-container">
-      <el-table :data="courses" style="width: 100%">
-        <el-table-column prop="id" label="课程代码" min-width="150">
+      <el-table :data="courses.data" style="width: 100%">
+        <el-table-column prop="courseId" label="课程代码" min-width="120">
         </el-table-column>
-        <el-table-column prop="name" label="名称" min-width="220">
+        <el-table-column prop="subjectName" label="名称" min-width="200">
         </el-table-column>
-        <el-table-column prop="college" label="开课学院" min-width="210">
+        <el-table-column prop="collegeName" label="开课学院" min-width="150">
         </el-table-column>
-        <el-table-column prop="teacher" label="任课教师" min-width="180"> </el-table-column>
-        <el-table-column label="选课人数" min-width="100">
+        <el-table-column prop="teacherName" label="任课教师" min-width="130"> </el-table-column>
+        <el-table-column label="选课人数" min-width="200" align="center">
           <template slot-scope="scope">
-            {{ scope.row.studentNumb }}/{{ scope.row.totalNumb }}
+            <p style="width:70%;margin:10px auto">
+              <el-progress
+                :show-text="false"
+                :status="
+                  scope.row.studentNumb / scope.row.totalNumb > 1 ? 'warning' : null
+                "
+                :percentage="
+                  scope.row.studentNumb / scope.row.totalNumb > 1
+                    ? 100
+                    : (scope.row.studentNumb / scope.row.totalNumb) * 100
+                "
+              ></el-progress>
+            </p>
+            <span>{{ scope.row.studentNumb }}/{{ scope.row.totalNumb }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100" align="center">
+        <el-table-column label="操作" width="160" align="center">
           <template slot-scope="scope">
             <el-popconfirm
               title="退课操作无法撤回。确认是否选择退课？"
-              @confirm="withdraw(scope.row.id)"
+              @confirm="withdraw(scope.row.courseId)"
             >
               <el-button size="small" slot="reference">我要退课</el-button>
             </el-popconfirm>
@@ -63,12 +95,13 @@
       >
         <el-form-item label="申请理由" prop="content">
           <el-input
+            :autosize="{ minRows: 4, maxRows: 12}"
             type="textarea"
-            autosize
             placeholder="请输入内容"
             v-model="withdrawForm.content"
           >
           </el-input>
+          <span style="float:right;margin-right:10px">当前字数：{{withdrawForm.content.length}}</span>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -80,180 +113,43 @@
 </template>
 
 <script>
+var that;
 export default {
+  directives: {
+    "el-select-loadmore": {
+      bind(el, binding) {
+        // 获取element-ui定义好的scroll盒子
+        const SELECTWRAP_DOM = el.querySelector(
+          ".el-select-dropdown .el-select-dropdown__wrap"
+        );
+        SELECTWRAP_DOM.addEventListener("scroll", function () {
+          /**
+           * scrollHeight 获取元素内容高度(只读)
+           * scrollTop 获取或者设置元素的偏移值,常用于, 计算滚动条的位置, 当一个元素的容器没有产生垂直方向的滚动条, 那它的scrollTop的值默认为0.
+           * clientHeight 读取元素的可见高度(只读)
+           * 如果元素滚动到底, 下面等式返回true, 没有则返回false:
+           * ele.scrollHeight - ele.scrollTop === ele.clientHeight;
+           */
+          const condition =
+            this.scrollHeight - this.scrollTop <= this.clientHeight;
+          if (condition) {
+            if (
+              binding.expression == "loadTerm" &&
+              that.terms.currentPage < that.terms.totalPage
+            ) {
+              binding.value();
+            }
+          }
+        });
+      },
+    },
+  },
   data() {
     return {
-      courses: [
-        {
-          id: 5088,
-          name: "面向对象的程序与设计",
-          college: "软件学院",
-          teacher: "教师0",
-          studentNumb: 26,
-          totalNumb: 63,
-        },
-        {
-          id: 2772,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师1",
-          studentNumb: 18,
-          totalNumb: 52,
-        },
-        {
-          id: 6835,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师2",
-          studentNumb: 17,
-          totalNumb: 50,
-        },
-        {
-          id: 6723,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师3",
-          studentNumb: 17,
-          totalNumb: 71,
-        },
-        {
-          id: 1483,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师4",
-          studentNumb: 48,
-          totalNumb: 68,
-        },
-        {
-          id: 6174,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师5",
-          studentNumb: 0,
-          totalNumb: 74,
-        },
-        {
-          id: 869,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师6",
-          studentNumb: 8,
-          totalNumb: 51,
-        },
-        {
-          id: 7009,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师7",
-          studentNumb: 32,
-          totalNumb: 59,
-        },
-        {
-          id: 9597,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师8",
-          studentNumb: 5,
-          totalNumb: 89,
-        },
-        {
-          id: 6664,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师9",
-          studentNumb: 33,
-          totalNumb: 80,
-        },
-        {
-          id: 7693,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师10",
-          studentNumb: 24,
-          totalNumb: 88,
-        },
-        {
-          id: 7726,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师11",
-          studentNumb: 48,
-          totalNumb: 85,
-        },
-        {
-          id: 4614,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师12",
-          studentNumb: 8,
-          totalNumb: 66,
-        },
-        {
-          id: 1252,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师13",
-          studentNumb: 5,
-          totalNumb: 59,
-        },
-        {
-          id: 2114,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师14",
-          studentNumb: 8,
-          totalNumb: 55,
-        },
-        {
-          id: 6401,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师15",
-          studentNumb: 15,
-          totalNumb: 94,
-        },
-        {
-          id: 4824,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师16",
-          studentNumb: 47,
-          totalNumb: 55,
-        },
-        {
-          id: 7858,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师17",
-          studentNumb: 31,
-          totalNumb: 52,
-        },
-        {
-          id: 4504,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师18",
-          studentNumb: 4,
-          totalNumb: 89,
-        },
-        {
-          id: 5641,
-          name: "离散数学",
-          college: "数学与统计学院",
-          teacher: "教师19",
-          studentNumb: 32,
-          totalNumb: 60,
-        },
-      ],
-      term: "",
-      terms: [
-        { id: 1, name: "2020年春学期" },
-        { id: 2, name: "2020年秋学期" },
-        { id: 3, name: "2021年春学期" },
-        { id: 4, name: "2021年秋学期" },
-        { id: 5, name: "2022年春学期" },
-        { id: 6, name: "2022年秋学期" },
-      ],
+      courses: [],
+      termId: null,
+      cacheTerm: "",
+      terms: { data: [], currentPage: 0, totalPage: 1 },
       termLoading: false,
       loadingWithdraw: false,
       withdrawFormShow: false,
@@ -268,25 +164,31 @@ export default {
       },
     };
   },
+  mounted() {
+    that = this;
+    this.searchTerm("");
+    this.selectCourse(1);
+  },
   methods: {
-    searchItems(query) {
-      this.termLoading = true;
-      console.log("根据" + query + "搜索学期");
-    },
     withdraw(id) {
       this.loadingWithdraw = true;
-      console.log("提交退课申请");
-      setTimeout(() => {
-        //如果不能立即退课
-        if (Math.random() < 0.5) {
-          this.withdrawFormShow = true;
-          this.loadingWithdraw = false;
-        } else {
-          //可以立即退课,已退课
+      this.axios({
+        method:'get',
+        url:'/course/withdraw/judge',
+        params:{
+          courseId:id
+        }
+      }).then(res=>{
+        console.log(res.data.code)
+        if(res.data.code==200){
           this.loadingWithdraw = false;
           this.successWithdraw();
+          this.$router.go(0)
+        } else {
+          this.withdrawFormShow = true;
+          this.loadingWithdraw = false;
         }
-      }, 1000);
+      })
     },
     successWithdraw() {
       this.$message({
@@ -304,6 +206,55 @@ export default {
       //提交表单
       this.withdrawFormShow = false
       this.successApplyWithdraw()
+    },
+    changePage(newPage) {
+      this.selectCourse(newPage)
+    },
+    selectCourse(page) {
+      this.axios({
+        method: "get",
+        url: "/course/search",
+        params: {
+          termId: this.termId,
+          page: page
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          if (this.termId == null) {
+            //根据term分组(待定)
+            this.courses = res.data.data;
+          } else {
+            this.courses = res.data.data;
+          }
+        }
+      });
+    },
+    searchTerm(query) {
+      this.terms = { data: [], currentPage: 0, totalPage: 1 };
+      this.cacheTerm = query;
+      this.termLoading = true;
+      this.loadTerm();
+    },
+    clearTerm(){
+      this.searchTerm()
+    },
+    loadTerm() {
+      const name = this.cacheTerm;
+      this.axios({
+        method: "get",
+        url: "/term/search",
+        params: {
+          name: name,
+          page: this.terms.currentPage + 1,
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          this.termLoading = false;
+          this.terms.data = this.terms.data.concat(res.data.data.data);
+          this.terms.currentPage = res.data.data.currentPage;
+          this.terms.totalPage = res.data.data.totalPage;
+        }
+      });
     },
   },
 };

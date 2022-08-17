@@ -334,6 +334,7 @@ export default {
       btnDisabled: [true, true],
       dialogVisible: false,
       lastItemName: "",
+      intervals : new Array()
     };
   },
   computed:{
@@ -395,24 +396,30 @@ export default {
             type:'error'
           })
         }
+      }, e=>{
+        this.$set(this.btnContainer, key, "发送验证码");
+        this.$set(this.isSend, key, false);
+        this.$set(this.btnDisabled, key, false);
+        this.$message({
+          message:"发送失败,请稍后再试",
+          type:'error'
+        })
       })
     },
     changeBtnText(key) {
-      setTimeout(() => {
-        if (this.btnContainer[key] == "发送验证码") {
-          this.$set(this.btnContainer, key, 59);
-          this.changeBtnText(key);
-        } else {
+      var interval = setInterval(() => {
+        if (this.btnContainer[key] != "发送验证码") {
           this.$set(this.btnContainer, key, this.btnContainer[key] - 1);
           if (this.btnContainer[key] != -1) {
-            this.changeBtnText(key);
           } else {
             this.$set(this.btnContainer, key, "发送验证码");
             this.$set(this.isSend, key, false);
             this.verifyPhone(this.newUserInfo.oldPhone, key);
+            clearInterval(this.interval)
           }
         }
       }, 1000);
+      this.intervals.push(interval)
     },
     verifyPhone(newValue, key) {
       var pattern =
@@ -441,6 +448,9 @@ export default {
                 message:'修改成功',
                 type:'success'
               })
+              for(const key in this.intervals){
+                clearInterval(intervals[key])
+              }
               this.MyUtils.fillLocalStorage(localStorage.getItem('token'))
               this.$router.go(0)
               this.refreshPhone();

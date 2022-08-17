@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.lr.api.Result;
 import org.lr.api.ResultCode;
 import org.lr.dto.PicCodeDto;
-import org.lr.vo.PicCodeVo;
+import org.lr.vo.basic.PicCodeVo;
 import org.lr.service.VerificationCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

@@ -17,8 +17,6 @@ axios.interceptors.request.use(config => {
         config.headers['Authorization'] = localStorage.getItem('token')
     }
     return config;
-}, error => {
-    console.log(error);
 })
 axios.interceptors.response.use(
     response => {
@@ -29,6 +27,11 @@ axios.interceptors.response.use(
         return response
     },
     error => {
+        if (error.response.status == 400) {
+            ElementUI.Message.warning(error.response.data.message)
+        } else {
+            ElementUI.Message.error(error.response.data.message)
+        }
         return Promise.reject(error)
     }
 )

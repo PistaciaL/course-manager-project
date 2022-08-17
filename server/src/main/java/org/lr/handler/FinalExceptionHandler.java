@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  */
 
 @Order()
-//@RestControllerAdvice
+@RestControllerAdvice
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class FinalExceptionHandler {
 
-    @ExceptionHandler(Exception.class)
+//    @ExceptionHandler(Exception.class)
     public Result handlerGlobalException(Exception e) {
-        return new Result(ResultCode.INTERNAL_SERVER_ERROR);
+        return Result.serverError();
     }
 }

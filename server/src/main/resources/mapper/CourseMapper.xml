@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.lr.mapper.CourseMapper">
+    <resultMap id="Course" type="org.lr.entity.Course">
+        <id property="id" column="course_id" javaType="Integer"/>
+        <result property="maxStudent" column="max_student" javaType="Integer"/>
+        <result property="existStudent" column="exist_student" javaType="Integer"/>
+        <result property="markIsPublish" column="mark_is_publish" javaType="Boolean"/>
+        <association property="subject" javaType="org.lr.entity.Subject">
+            <id property="id" column="subject_id" javaType="Integer"/>
+            <result property="name" column="s_name" javaType="String"/>
+            <result property="lessonHour" column="lesson_hour" javaType="Integer"/>
+            <result property="credit" column="credit" javaType="Float"/>
+        </association>
+        <association property="teacher" javaType="org.lr.entity.User">
+            <id property="id" column="user_id" javaType="String"/>
+            <result property="name" column="u_name" javaType="String"/>
+        </association>
+        <association property="term" javaType="org.lr.entity.Term">
+            <id property="id" column="term_id" javaType="Integer"/>
+            <result property="name" column="t_name" javaType="String"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="CourseSearched" type="org.lr.vo.TeacherCourseVo">
+        <id property="id" column="c_id" javaType="Integer"/>
+        <result property="name" column="s_name" javaType="String"/>
+        <result property="hour" column="hour" javaType="Integer"/>
+        <result property="totalNumb" column="max_student" javaType="Integer"/>
+        <result property="studentNumb" column="exist_student" javaType="Integer"/>
+        <result property="markIsPublish" column="mark_is_publish" javaType="Boolean"/>
+        <result property="termName" column="t_name" javaType="String"/>
+        <collection property="exams" ofType="org.lr.dto.CourseExamDto">
+            <id property="examId" column="e_id" javaType="Integer"/>
+            <result property="startTime" column="start_time" javaType="java.time.LocalDateTime"/>
+            <result property="endTime" column="end_time" javaType="java.time.LocalDateTime"/>
+            <result property="roomNames" column="r_name" jdbcType="ARRAY"
+                    typeHandler="org.lr.handler.typeHandler.ArrayTypeHandler"/>
+        </collection>
+    </resultMap>
+    <resultMap id="AllCourse" type="org.lr.vo.AllCourseVo">
+        <id property="courseId" column="course_id" javaType="Integer"/>
+    </resultMap>
+    <resultMap id="CourseStudent" type="org.lr.vo.StudentCourseVo">
+        <id property="courseId" column="course_id" javaType="Integer"/>
+        <result property="subjectName" column="subject_name" javaType="String"/>
+        <result property="credit" column="credit" javaType="Float"/>
+        <result property="teacherName" column="teacher_name" javaType="String"/>
+        <result property="studentNumb" column="exist_student" javaType="Integer"/>
+        <result property="totalNumb" column="max_student" javaType="Integer"/>
+        <result property="collegeName" column="college_name" javaType="String"/>
+        <collection property="marks" ofType="org.lr.vo.StudentMarkVo">
+            <id property="name" column="model_name" javaType="String"/>
+            <result property="mark" column="mark" javaType="Integer"/>
+            <result property="percent" column="percentage" javaType="Float"/>
+        </collection>
+    </resultMap>
+
+    <insert id="insert">
+        insert into course (subject_id, teacher_id, term_id, max_student)
+        values (#{subjectId}, #{userId}, #{termId}, #{maxStudent})
+    </insert>
+    <select id="selectPageTeacher" resultMap="CourseSearched">
+        select tb1.c_id, tb1.s_name, tb1.hour, tb1.max_student, tb1.exist_student,tb1.mark_is_publish,
+        e.exam_id as e_id, e.start_time, e.end_time, e.room_name as r_name
+        <if test="termId==null">
+            ,t_name
+        </if>
+        from (
+        select c.course_id as c_id, s.name as s_name, s.lesson_hour as "hour" ,
+        c.max_student, c.exist_student, c.mark_is_publish
+        <if test="termId==null">
+            ,t.name as t_name
+        </if>
+        from course c
+        left join subject s on c.subject_id = s.subject_id
+        <if test="termId==null">
+            left join term t on t.term_id =c.term_id
+        </if>
+        where c.teacher_id = #{teacherId}
+        <if test="termId!=null">
+            and c.term_id =#{termId}
+        </if>
+        limit #{pageSize} offset ${(page - 1) * pageSize}
+        ) as tb1
+        left join exam e on e.course_id = tb1.c_id;
+    </select>
+    <select id="selectPageCount" resultType="java.lang.Long">
+        select count(*) from course c left join exam e on e.course_id = c.course_id left join term t on c.term_id =
+        t.term_id
+        <if test="collegeId!=null">left join subject s on c.subject_id = s.subject_id</if>
+        <if test="studentId!=null">inner join student_course sc on c.course_id = sc.course_id</if>
+        <where>
+            <if test="teacherId!=null and teacherId != ''">and c.teacher_id=#{teacherId}</if>
+            <if test="studentId!=null">and sc.student_id=#{studentId}</if>
+            <if test="termId!=null">and c.term_id=#{termId}</if>
+            <if test="subjectId!=null">and c.subject_id =#{subjectId}</if>
+            <if test="collegeId!=null">and s.college_id =#{collegeId}</if>
+        </where>
+    </select>
+    <select id="selectPageAll" resultMap="AllCourse">
+        select cou.course_id , cou.exist_student as student_numb , cou.max_student as max_numb ,
+               s.subject_id , s."name" as subject_name , s.lesson_hour as hour ,
+               col.college_id , col."name" as college_name ,
+               u.user_id as teacher_id , u."name" as teacher_name ,
+               t.term_id , t."name" as term_name
+        from course cou
+                 left join subject s on s.subject_id = cou.subject_id
+                 left join college col on col.college_id = s.college_id
+                 left join "user" u on u.user_id = cou.teacher_id
+                 left join term t on t.term_id = cou.term_id
+        <if test="studentId!=null">inner join student_course sc on cou.course_id = sc.course_id</if>
+        <where>
+            <if test="teacherId!=null and teacherId != ''">and u.user_id=#{teacherId}</if>
+            <if test="studentId!=null">and sc.student_id=#{studentId}</if>
+            <if test="termId!=null">and t.term_id=#{termId}</if>
+            <if test="subjectId!=null">and s.subject_id =#{subjectId}</if>
+            <if test="collegeId!=null">and col.college_id =#{collegeId}</if>
+        </where>
+        limit #{pageSize} offset ${(page - 1) * pageSize}
+    </select>
+    <select id="selectPageStudent" resultMap="CourseStudent">
+        select tb1.* ,
+        mm."name" as model_name, mm.percentage ,
+        mi.mark
+        from (
+        select cou.course_id , cou.exist_student , cou.max_student ,
+        s."name" as subject_name , s.credit ,
+        u."name" as teacher_name ,
+        coll.name as college_name
+        from student_course sc
+        left join course cou on sc.course_id = cou.course_id
+        left join subject s on s.subject_id = cou.subject_id
+        left join "user" u on u.user_id = cou.teacher_id
+        left join college coll on s.college_id = coll.college_id
+        where sc.student_id = #{studentId}
+        <if test="termId!=null">and cou.term_id = #{termId}</if>
+        limit #{pageSize} offset ${(page - 1) * pageSize}) as tb1
+        left join mark_model mm on mm.course_id = tb1.course_id
+        left join mark_info mi on mi.student_id = #{studentId} and mi.mm_id = mm.mm_id
+    </select>
+</mapper>

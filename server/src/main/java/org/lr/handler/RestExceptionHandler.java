@@ -27,4 +27,5 @@ public class RestExceptionHandler {
     public Result handlerMyException(MyException e){
         return new Result(ResultCode.FAILURE, e.getMessage());
     }
+
 }

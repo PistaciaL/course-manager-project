@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.lr.mapper.ScheduleMapper">
+    <resultMap id="CourseScheduleVo" type="org.lr.vo.CourseScheduleVo">
+        <id property="courseId" column="course_id" javaType="Integer"/>
+        <collection property="schedules" ofType="org.lr.vo.CourseScheduleDetailVo">
+            <result property="classDate" column="class_date" javaType="java.time.LocalDate"/>
+            <result property="roomName" column="room_name" javaType="String"/>
+            <result property="startHour" column="start_hour" javaType="Integer"/>
+            <result property="endHour" column="end_hour" javaType="Integer"/>
+        </collection>
+    </resultMap>
+
+    <select id="searchCourseSchedule" resultMap="CourseScheduleVo">
+        select s.course_id , s.class_date ,
+               s.start_class_hour as start_hour , s.end_class_hour as end_hour ,
+               r."location" as room_name from schedule s
+        left join room r on r.room_id = s.room_id
+        where s.course_id=#{courseId} and s.schedule_type='上课'
+    </select>
+
+    <select id="selectCourseFirstClass" resultType="java.time.LocalDate">
+        select class_date from schedule where course_id = #{courseId} order by class_date asc limit 1
+    </select>
+</mapper>

@@ -2,16 +2,15 @@ package org.lr.controller.basic;
 
 import com.auth0.jwt.interfaces.Claim;
 import org.lr.api.Result;
-import org.lr.api.ResultCode;
 import org.lr.dto.LoginDto;
 import org.lr.dto.RegisterVerifyDto;
 import org.lr.handler.MyException;
 import org.lr.service.UserService;
 import org.lr.service.VerificationCodeService;
-import org.lr.vo.NameLoginVo;
-import org.lr.vo.PhoneLoginVo;
-import org.lr.vo.RegisterFinishVo;
-import org.lr.vo.RegisterVerifyVo;
+import org.lr.vo.basic.NameLoginVo;
+import org.lr.vo.basic.PhoneLoginVo;
+import org.lr.vo.basic.RegisterFinishVo;
+import org.lr.vo.basic.RegisterVerifyVo;
 import org.lr.entity.User;
 import org.lr.entity.WorkNumber;
 import org.lr.service.WorkNumberService;
@@ -79,12 +78,8 @@ public class LoginRegisterController {
     @PostMapping("/register/finish")
     public Result finishInfo(@RequestBody RegisterFinishVo dto, HttpServletRequest request) throws Exception {
         Map<String, Claim> map = null;
-        try{
-            String token = request.getHeader("Authorization");
-            map = JWTUtil.verifyToken(token);
-        } catch (Exception e){
-            return Result.tokenError("令牌过期,请重新登录");
-        }
+        String token = request.getHeader("Authorization");
+        map = JWTUtil.verifyToken(token);
         if(!verificationCodeService.verifyPhoneCode(dto.getPhoneNumb(),dto.getVerifyCode())){
             return Result.fail("验证码错误或失效");
         }
@@ -105,8 +100,8 @@ public class LoginRegisterController {
             tokenInfo.put("workNumb", user.getId());
             tokenInfo.put("name", user.getName());
             tokenInfo.put("phone", user.getPhone());
-            String token = JWTUtil.getToken(tokenInfo);
-            return Result.success(token);
+            String newToken = JWTUtil.getToken(tokenInfo);
+            return Result.success(newToken);
         }
         return Result.fail("注册失败");
     }

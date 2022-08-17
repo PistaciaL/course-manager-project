@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.lr.mapper.SubjectMapper">
+    <resultMap id="Subject" type="org.lr.entity.Subject">
+        <id property="id" column="subject_id" javaType="Integer"/>
+        <result property="name" column="s_name" javaType="String"/>
+        <result property="credit" column="credit" javaType="Float"/>
+        <result property="lessonHour" column="lesson_hour" javaType="Integer"/>
+        <association property="college" javaType="org.lr.entity.College">
+            <id property="id" column="college_id" javaType="Integer"/>
+            <result property="name" column="c_name" javaType="String"/>
+        </association>
+    </resultMap>
+
+    <select id="selectPage" resultMap="Subject">
+        select s.subject_id,s."name" as s_name,s.lesson_hour,s.credit,c.college_id, c.name as c_name from subject s 
+            left join college c on s.college_id = c.college_id
+    <where>
+    <if test="dto.collegeId!=null">
+        and s.college_id = #{dto.collegeId}
+    </if>
+    <if test="dto.name!=null">
+        and s.name like concat('%',#{dto.name},'%')
+    </if>
+    </where>
+    </select>
+
+    <select id="selectById" resultMap="Subject">
+        select subject_id, s.name as s_name, credit, lesson_hour, c.college_id, c.name as c_name
+        from subject s left join college c on s.college_id = c.college_id where subject_id=#{id}
+    </select>
+
+
+</mapper>

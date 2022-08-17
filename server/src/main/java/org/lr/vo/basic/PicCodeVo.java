@@ -1,4 +1,4 @@
-package org.lr.vo;
+package org.lr.vo.basic;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

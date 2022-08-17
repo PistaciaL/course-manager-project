@@ -54,13 +54,14 @@ public class JWTUtil {
     public static String getTokenByClaimMap(Map<String, Claim> map){
         Algorithm algorithm = Algorithm.HMAC256(KEY_STR);
         JWTCreator.Builder builder = JWT.create()
-                .withIssuedAt(new Date())
-                .withExpiresAt(new Date(new Date().getTime()+1000l*60*60*4))
                 .withIssuer("course_manager_project");
         for(String key : map.keySet()){
             builder.withClaim(key, map.get(key).asString());
         }
-        String token = builder.sign(algorithm);
+        String token = builder
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date(new Date().getTime()+1000l*60*60*4))
+                .sign(algorithm);
         return token;
     }
 
@@ -71,7 +72,7 @@ public class JWTUtil {
      * @throws IllegalArgumentException: "JWT超时"
      * @throws Exception: "JWT解码失败"
      */
-    public static Map verifyToken(String token) throws IllegalArgumentException, Exception{
+    public static Map<String,Claim> verifyToken(String token) throws IllegalArgumentException, Exception{
         DecodedJWT verify = null;
         Algorithm algorithm = Algorithm.HMAC256(KEY_STR);
         JWTVerifier jwtVerifier = JWT.require(algorithm)

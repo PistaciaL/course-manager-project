@@ -104,6 +104,7 @@ export default {
             } 
           }).then(res=>{
             if(res.data.code==200){
+              clearInterval(this.interval)
               const jwt = this.jwt_decode(res.data.data)
               localStorage.setItem('name', jwt.name);
               localStorage.setItem('workNumb', jwt.workNumb);
@@ -165,18 +166,15 @@ export default {
       })
     },
     changeBtnText() {
-      setTimeout(() => {
-        if (that.btnContainer == '发送验证码') {
-          that.btnContainer = 59
-          that.changeBtnText()
-        } else {
+      this.interval = setInterval(() => {
+        if (that.btnContainer != '发送验证码') {
           that.btnContainer = that.btnContainer - 1
           if (that.btnContainer != -1) {
-            that.changeBtnText()
           } else {
             that.btnContainer = '发送验证码'
             that.isSend = false
             this.verifyPhone(this.form.phone)
+            clearInterval(this.interval)
           }
         }
       }, 1000)

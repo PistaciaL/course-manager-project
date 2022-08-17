@@ -10,6 +10,8 @@ spring:
     password: BXYbxy523656497
     port: 6379
 mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
       logic-not-delete-value: false

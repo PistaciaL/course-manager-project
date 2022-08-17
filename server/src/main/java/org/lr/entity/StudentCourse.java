@@ -7,8 +7,7 @@ import lombok.Data;
 
 @Data
 public class StudentCourse {
-    @TableId(type = IdType.AUTO)
-    @TableField("sc_id")
+    @TableId(value = "sc_id", type = IdType.AUTO)
     private Integer id;
     private Course course;
     private User student;

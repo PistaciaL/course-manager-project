@@ -5,9 +5,13 @@ import org.apache.ibatis.annotations.Mapper;
 import org.lr.dto.ChangeAvatarDto;
 import org.lr.dto.ChangePasswdDto;
 import org.lr.dto.ChangePhoneDto;
+import org.lr.dto.SearchPageSimpleDto;
 import org.lr.entity.User;
+import org.lr.vo.PageInfoVo;
+import org.lr.vo.UserSimpleVo;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
@@ -27,4 +31,8 @@ public interface UserMapper extends BaseMapper<User> {
     int updatePasswdById(ChangePasswdDto dto);
 
     int updatePhone(ChangePhoneDto dto);
+
+    List<UserSimpleVo> selectUserSimple(SearchPageSimpleDto dto);
+
+    Integer selectUserSimpleCount(SearchPageSimpleDto dto);
 }

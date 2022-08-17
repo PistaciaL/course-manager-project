@@ -1,49 +1,85 @@
 <template>
   <div class="form">
     <div class="term-select">
-      <span>选择学期：</span>
-      <el-select
-        v-model="term"
-        filterable
-        remote
-        reserve-keyword
-        :remote-method="searchItems"
-        :loading="loading"
-        size="small"
-      >
-        <el-option
-          v-for="item in terms"
-          :key="item.id"
-          :label="item.name"
-          :value="item.id"
+        <span>选择学期：</span>
+        <el-select
+          v-model="termId"
+          :remote-method="searchTerm"
+          placeholder=""
+          :loading="loading"
+          filterable
+          remote
+          v-el-select-loadmore="loadTerm"
+          :clearable="true"
+          size="small"
+          @change="selectCourse(1)"
+          @clear="clearTerm"
         >
-        </el-option>
-      </el-select>
-    </div>
+          <el-option
+            v-for="term in terms.data"
+            :key="term.id"
+            :label="term.name"
+            :value="term.id"
+          >
+          <span style="margin-right:50px">{{term.name}}</span>
+          <span style="float:right;font-size:8px;color:#909399;">{{term.startDate}} - {{term.endDate}}</span>
+          </el-option>
+          <el-option
+            :disabled="true"
+            value="-1"
+            key="-1"
+            style="text-align: center"
+          >
+            <div v-show="terms.currentPage < terms.totalPage">
+              <i class="el-icon-loading" /><span value="">加载中</span>
+            </div>
+            <div v-show="terms.currentPage >= terms.totalPage">
+              <span value="">已经全部加载完毕</span>
+            </div>
+          </el-option>
+        </el-select>
+      </div>
     <table cellspacing="0px" class="outer-table">
       <thead>
         <tr class="outer-head">
-          <th style="min-width: 150px">课程名</th>
-          <th style="min-width: 100px">任课教师</th>
-          <th style="min-width: 50px">学分</th>
-          <th style="width: 560px">课程分数</th>
-          <th style="min-width: 100px">排课时间</th>
+          <th style="min-width: 128px">课程名</th>
+          <th style="min-width: 98px">任课教师</th>
+          <th style="min-width: 58px">学分</th>
+          <th style="min-width: 158px">选课人数</th>
+          <th style="min-width: 418px;width:518px">课程分数</th>
+          <th style="min-width: 88px">排课时间</th>
         </tr>
       </thead>
       <tbody class="outer-body">
-        <tr v-for="course in courses" :key="course.id">
-          <td>{{ course.name }}</td>
-          <td style="text-align:center">{{ course.tName }}</td>
+        <tr v-for="course in courses.data" :key="course.courseId">
+          <td style="text-align:center">{{ course.subjectName }}</td>
+          <td style="text-align:center">{{ course.teacherName }}</td>
           <td style="text-align:center">{{ course.credit }}</td>
+          <td style="text-align:center">
+            <p style="width:70%;margin:10px auto">
+              <el-progress
+                :show-text="false"
+                :status="
+                  course.studentNumb / course.totalNumb > 1 ? 'warning' : null
+                "
+                :percentage="
+                  course.studentNumb / course.totalNumb > 1
+                    ? 100
+                    : (course.studentNumb / course.totalNumb) * 100
+                "
+              ></el-progress>
+            </p>
+            <span>{{ course.studentNumb }}/{{ course.totalNumb }}</span>
+          </td>
           <td>
             <div v-if="course.marks != null" class="inner-table-container">
               <table cellspacing="0px" class="inner-table">
                 <tr>
-                  <th style="width: 100px"></th>
+                  <th style="width: 78px"></th>
                   <th v-for="mark in course.marks" :key="mark.name">
                     {{ mark.name }}
                   </th>
-                  <th style="width: 100px">总成绩</th>
+                  <th style="width: 98px">总成绩</th>
                 </tr>
                 <tr>
                   <th>成绩</th>
@@ -57,27 +93,46 @@
                   <td v-for="mark in course.marks" :key="mark.name">
                     {{ mark.percent * 100 }}%
                   </td>
-                  <td>100%</td>
+                  <td></td>
                 </tr>
               </table>
             </div>
             <div v-else class="no-mark">成绩暂未发布</div>
           </td>
           <td style="text-align:center">
-            <el-button
-              icon="el-icon-search"
-              circle
-              @click="showSchedule(course.id)"
-            ></el-button>
+            <el-tooltip class="item" effect="dark" content="该课程暂未排课" placement="bottom" :disabled="course.schedule!=''">
+              <div style="width:min-content;margin:auto">
+                <el-button
+                  :disabled="course.schedule==''"
+                  :ref="'scheduleBtn'+course.courseId"
+                  :icon="scheduleIsLoading==course.courseId?'el-icon-loading':'el-icon-search'"
+                  circle
+                  @click="showSchedule(course)"
+                ></el-button>
+              </div>
+            </el-tooltip>
           </td>
         </tr>
       </tbody>
     </table>
+    <div class="page-divider">
+      <el-pagination
+        layout="prev, pager, next"
+        :page-count="courses.totalPage"
+        :page-size="courses.pageSize"
+        :current-page.sync="courses.currentPage"
+        :hide-on-single-page="true"
+        @current-change="changePage"
+      >
+      </el-pagination>
+    </div>
     <el-dialog title="排课时间" :visible.sync="scheduleIsShow">
-      <el-calendar>
+      <el-calendar v-model="schedules.startDate">
         <template slot="dateCell" slot-scope="data">
-          <span>{{ data.data.day.split("-").slice(1).join("/") }}</span>
-          <p style="background:#90939920">{{ hasCourse(data.data.day) }}</p>
+          <span>{{ data.data.day.split("-").slice(1).join("-") }}</span>
+          <span style="display:block;margin-top:5px" v-for="info in hasCourse(data.data.day)" :key="info==null?null:null">
+            {{info}}
+          </span>
         </template>
       </el-calendar>
     </el-dialog>
@@ -85,141 +140,56 @@
 </template>
 
 <script>
+var that;
 export default {
+  directives: {
+    "el-select-loadmore": {
+      bind(el, binding) {
+        // 获取element-ui定义好的scroll盒子
+        const SELECTWRAP_DOM = el.querySelector(
+          ".el-select-dropdown .el-select-dropdown__wrap"
+        );
+        SELECTWRAP_DOM.addEventListener("scroll", function () {
+          /**
+           * scrollHeight 获取元素内容高度(只读)
+           * scrollTop 获取或者设置元素的偏移值,常用于, 计算滚动条的位置, 当一个元素的容器没有产生垂直方向的滚动条, 那它的scrollTop的值默认为0.
+           * clientHeight 读取元素的可见高度(只读)
+           * 如果元素滚动到底, 下面等式返回true, 没有则返回false:
+           * ele.scrollHeight - ele.scrollTop === ele.clientHeight;
+           */
+          const condition =
+            this.scrollHeight - this.scrollTop <= this.clientHeight;
+          if (condition) {
+            if (
+              binding.expression == "loadTerm" &&
+              that.terms.currentPage < that.terms.totalPage
+            ) {
+              binding.value();
+            }
+          }
+        });
+      },
+    },
+  },
   data() {
     return {
-      term: "",
-      terms: [
-        { id: 1, name: "2020年春学期" },
-        { id: 2, name: "2020年秋学期" },
-        { id: 3, name: "2021年春学期" },
-        { id: 4, name: "2021年秋学期" },
-        { id: 5, name: "2022年春学期" },
-        { id: 6, name: "2022年秋学期" },
-      ],
-        loading: false,
-      courses: [
-        {
-          id: 1,
-          name: "高等数学",
-          tName: "教师一",
-          credit: 3,
-          marks: [
-            { name: "平时成绩", mark: 90, percent: 0.4 },
-            { name: "期中考试", mark: 80, percent: 0.2 },
-            { name: "期末考试", mark: 90, percent: 0.4 },
-          ],
-        },
-        {
-          id: 2,
-          name: "大学物理",
-          tName: "教师二",
-          credit: 2.5,
-          marks: [
-            { name: "平时成绩", mark: 85, percent: 0.2 },
-            { name: "期中考试", mark: 78, percent: 0.4 },
-            { name: "期末考试", mark: 95, percent: 0.4 },
-          ],
-        },
-        {
-          id: 3,
-          name: "离散数学",
-          tName: "教师一",
-          credit: 3,
-          marks: [
-            { name: "平时成绩", mark: 90, percent: 0.2 },
-            { name: "期中考试", mark: 95, percent: 0.8 },
-          ],
-        },
-        {
-          id: 4,
-          name: "面向对象的程序与设计",
-          tName: "教师一",
-          credit: 4,
-          mark: null,
-        },
-        {
-          id: 5,
-          name: "面向对象的程序与设计",
-          tName: "教师一",
-          credit: 4,
-          mark: null,
-        },
-        {
-          id: 6,
-          name: "面向对象的程序与设计",
-          tName: "教师一",
-          credit: 4,
-          mark: null,
-        },
-        {
-          id: 7,
-          name: "面向对象的程序与设计",
-          tName: "教师一",
-          credit: 4,
-          mark: null,
-        },
-        {
-          id: 8,
-          name: "面向对象的程序与设计",
-          tName: "教师一",
-          credit: 4,
-          mark: null,
-        },
-        {
-          id: 9,
-          name: "面向对象的程序与设计",
-          tName: "教师一",
-          credit: 4,
-          mark: null,
-        },
-        {
-          id: 10,
-          name: "面向对象的程序与设计",
-          tName: "教师一",
-          credit: 4,
-          mark: null,
-        },
-        {
-          id: 11,
-          name: "面向对象的程序与设计",
-          tName: "教师一",
-          credit: 4,
-          mark: null,
-        },
-        {
-          id: 12,
-          name: "面向对象的程序与设计",
-          tName: "教师一",
-          credit: 4,
-          mark: null,
-        },
-      ],
-      schedules: [
-        [],
-        [],
-        [],
-        [],
-        [],
-        [
-          { day: 25, startHour: 1, endHour: 2 },
-          { day: 26, startHour: 1, endHour: 2 },
-        ],
-        [
-          { day: 1, startHour: 1, endHour: 2 },
-          { day: 3, startHour: 1, endHour: 2 },
-          { day: 5, startHour: 1, endHour: 2 },
-          { day: 6, startHour: 1, endHour: 2 },
-          { day: 11, startHour: 1, endHour: 2 },
-        ],
-        [],
-        [],
-        [],
-        [],
-        [],
-      ],
+      termId: null,
+      cacheTerm: "",
+      terms: { data: [], currentPage: 0, totalPage: 1 },
+      loading: false,
+      scheduleIsLoading:null,
+      courses: [],
+      schedules: {
+        startDate: null,
+        data:[],
+      },
       scheduleIsShow: false,
     };
+  },
+  mounted(){
+    that = this;
+    this.searchTerm("");
+    this.selectCourse(1);
   },
   methods: {
     totalMark(marks) {
@@ -227,26 +197,99 @@ export default {
       for (const key in marks) {
         sum += marks[key].mark * marks[key].percent;
       }
-      return sum;
+      return sum.toFixed(1);
     },
-    showSchedule(id) {
-      console.log("请求排课表,格式化");
-      this.scheduleIsShow = true;
-    },
-    hasCourse(date) {
-      const month = parseInt(date.split("-")[1]);
-      const day = parseInt(date.split("-")[2]);
-      for (const key in this.schedules[month - 1]) {
-        const daySchedule = this.schedules[month - 1][key];
-        if (daySchedule.day == day) {
-          return daySchedule.startHour + "-" + daySchedule.endHour + "节";
-        }
+    showSchedule(course) {
+      const id = course.courseId
+      this.scheduleIsLoading=id
+      if(course.schedule==null){
+        this.axios({
+          method:'get',
+          url:'/schedule/course/search',
+          params:{
+            courseId:id
+          }
+        }).then(res=>{
+          if(res.data.code==200){
+            course.schedule=this.formatSchedule(res.data.data.schedules)
+            this.schedules=course.schedule
+            this.scheduleIsShow = true;
+          } else {
+            course.schedule=''
+          }
+          this.scheduleIsLoading=null
+        })
+      } else {
+        this.schedules=course.schedule
+        this.scheduleIsShow = true;
+        this.scheduleIsLoading=null
       }
     },
-    searchItems(query){
-      this.loading = true
-      console.log("根据"+query+"搜索学期")
-    }
+    formatSchedule(schedules){
+      var scheduleList = {startDate:new Date("2099-01-01"),data:{}}
+      schedules.forEach((value)=>{
+        if(new Date(value.classDate)<scheduleList.startDate){
+          scheduleList.startDate = new Date(value.classDate)
+        }
+        scheduleList.data[value.classDate]={roomName:value.roomName,startHour:value.startHour,endHour:value.endHour}
+      })
+      return scheduleList
+    },
+    hasCourse(date) {
+      if(this.schedules.data[date]!=null){
+        console.log(this.schedules.data[date])
+        return [this.schedules.data[date].startHour+"-"+this.schedules.data[date].endHour+"节",this.schedules.data[date].roomName]
+      }
+    },
+    selectCourse(page) {
+      this.axios({
+        method: "get",
+        url: "/course/search",
+        params: {
+          termId: this.termId,
+          page: page
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          if (this.termId == null) {
+            //根据term分组(待定)
+            this.courses = res.data.data;
+          } else {
+            this.courses = res.data.data;
+          }
+        }
+      });
+    },
+    changePage(newPage) {
+      this.selectCourse(newPage)
+    },
+    searchTerm(query) {
+      this.terms = { data: [], currentPage: 0, totalPage: 1 };
+      this.cacheTerm = query;
+      this.loading = true;
+      this.loadTerm();
+    },
+    clearTerm(){
+      this.searchTerm()
+    },
+    loadTerm() {
+      const name = this.cacheTerm;
+      this.axios({
+        method: "get",
+        url: "/term/search",
+        params: {
+          name: name,
+          page: this.terms.currentPage + 1
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          this.loading = false;
+          this.terms.data = this.terms.data.concat(res.data.data.data);
+          this.terms.currentPage = res.data.data.currentPage;
+          this.terms.totalPage = res.data.data.totalPage;
+        } 
+      });
+    },
   },
 };
 </script>
@@ -306,5 +349,11 @@ export default {
 }
 td{
   padding: 0 10px;
+}
+
+.page-divider {
+  float: right;
+  margin-top: 10px;
+  margin-right: 30px;
 }
 </style>

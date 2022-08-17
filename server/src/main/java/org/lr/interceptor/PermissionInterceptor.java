@@ -2,6 +2,7 @@ package org.lr.interceptor;
 
 import com.auth0.jwt.interfaces.Claim;
 import lombok.extern.slf4j.Slf4j;
+import org.lr.handler.MyException;
 import org.lr.utils.JWTUtil;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -23,21 +24,21 @@ public class PermissionInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String token = request.getHeader("Authorization");
+        String token;
+        try{
+            token = request.getHeader("Authorization");
+        } catch (Exception e){
+            throw new MyException("令牌过期,请重新登录");
+        }
         if(token!=null){
-            JWTUtil.verifyToken(token);
+            Map map = JWTUtil.verifyToken(token);
+            if (response.getHeader("Authorization") == null) {
+                String newToken = JWTUtil.getTokenByClaimMap(map);
+                response.setHeader("Access-Control-Expose-Headers","Authorization");
+                response.setHeader("Authorization", newToken);
+            }
             return true;
         }
         return false;
-    }
-
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex) throws Exception {
-        String token = request.getHeader("Authorization");
-        if(token!=null) {
-            if (response.getHeader("Authorization") == null) {
-                response.setHeader("Authorization", JWTUtil.getTokenByClaimMap(JWTUtil.verifyToken(token)));
-            }
-        }
     }
 }
