@@ -31,5 +31,9 @@ public class User {
     private LocalDateTime createTime;
     @TableLogic
     private boolean isDeleted;
+
+    public User(String id) {
+        this.id = id;
+    }
 }
 

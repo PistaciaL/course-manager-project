@@ -29,7 +29,8 @@
 
     <insert id="insert">
         insert into "user"(user_id, name, avatar, phone, password, college_id, specialty_id, study_year, identity, permission, create_time)
-            values(#{id}, #{name},#{avatar},#{phone},#{password},#{college.id},#{specialty.id},#{studyYear},#{identity,typeHandler=org.lr.typeHandler.MyEnumTypeHandler}::identity_enum,#{permission,typeHandler=org.lr.typeHandler.MyEnumTypeHandler}::permission_enum, #{createTime})
+            values(#{id}, #{name},#{avatar},#{phone},#{password},#{college.id},#{specialty.id},#{studyYear},#{identity
+            }::identity_enum,#{permission,typeHandler=org.lr.typeHandler.MyEnumTypeHandler}::permission_enum, #{createTime})
     </insert>
     <update id="updateAvatarByUserId">
         update "user" set avatar=#{avatarName} where user_id=#{userId}
@@ -77,5 +78,8 @@
         <where>
             <if test="name!=null">and name like concat('%',#{name},'%')</if>
         </where>
+    </select>
+    <select id="selectCollegeManagerByCollegeId" resultType="java.lang.Integer">
+        select user_id from "user" u where u.college_id = #{collegeId} and u.permission = '院级管理员';
     </select>
 </mapper>

@@ -15,5 +15,5 @@ public interface SubjectMapper extends BaseMapper<Subject> {
 
     <E extends IPage<Subject>> E selectPage(@Param("page") IPage<?> page, @Param("dto") SearchSubjectDto dto);
 
-    Subject selectById(Integer id);
+    Subject selectOneById(Integer id);
 }

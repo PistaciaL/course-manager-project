@@ -13,4 +13,8 @@ public class College {
     @TableId(value = "college_id", type = IdType.AUTO)
     private Integer id;
     private String name;
+
+    public College(Integer id) {
+        this.id = id;
+    }
 }

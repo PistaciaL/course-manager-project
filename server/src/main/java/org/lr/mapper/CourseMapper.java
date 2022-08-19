@@ -3,6 +3,7 @@ package org.lr.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.lr.dto.AddCourseDto;
+import org.lr.dto.CourseDto;
 import org.lr.dto.SearchCourseDto;
 import org.lr.entity.Course;
 import org.lr.vo.AllCourseVo;
@@ -23,4 +24,5 @@ public interface CourseMapper extends BaseMapper<Course> {
 
     List<StudentCourseVo> selectPageStudent(SearchCourseDto dto);
 
+    CourseDto selectBaseInfoById(Integer id);
 }

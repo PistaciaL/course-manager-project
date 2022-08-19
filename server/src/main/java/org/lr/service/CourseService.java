@@ -3,6 +3,7 @@ package org.lr.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.lr.dto.AddCourseDto;
+import org.lr.dto.CourseDto;
 import org.lr.dto.SearchCourseDto;
 import org.lr.dto.WithdrawDto;
 import org.lr.entity.Course;
@@ -54,7 +55,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         throw new MyException("不能注册该课程");
     }
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public PageInfoVo<TeacherCourseVo> selectPageTeacher(SearchCourseDto dto) throws MyException {
         User user = userService.selectById(dto.getTeacherId());
         if(!user.getIdentity().equals(IdentityEnum.Teacher)){
@@ -67,7 +68,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         return resPage;
     }
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public PageInfoVo<AllCourseVo> selectPageAll(SearchCourseDto dto){
         List<AllCourseVo> list = courseMapper.selectPageAll(dto);
         Long total = courseMapper.selectPageCount(dto);
@@ -76,7 +77,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         return resPage;
     }
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public PageInfoVo<StudentCourseVo> selectPageStudent(SearchCourseDto dto) throws MyException {
         User user = userService.selectById(dto.getStudentId());
         if(!user.getIdentity().equals(IdentityEnum.Student)){
@@ -89,7 +90,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         return resPage;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean withdraw(WithdrawDto dto) throws MyException {
         LocalDate firstDay = scheduleService.selectCourseFirstClass(dto.getCourseId());
         if(firstDay!=null && LocalDate.now().isAfter(firstDay.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)))){
@@ -100,5 +101,10 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
             throw new MyException("退课失败");
         }
         return true;
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public CourseDto selectBaseInfoById(Integer id){
+        return courseMapper.selectBaseInfoById(id);
     }
 }

@@ -82,4 +82,10 @@ public class JWTUtil {
         return verify.getClaims();
     }
 
+    public static String getUserId(String token) throws Exception {
+        Map<String, Claim> tokenMap = JWTUtil.verifyToken(token);
+        String userId = tokenMap.get("workNumb").asString();
+        return userId;
+    }
+
 }

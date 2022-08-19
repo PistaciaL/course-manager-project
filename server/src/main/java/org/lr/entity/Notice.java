@@ -8,8 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class Notice {
-    @TableId(type = IdType.AUTO)
-    @TableField("notice_id")
+    @TableId(value = "notice_id", type = IdType.AUTO)
     private Integer id;
     private NoticeEnum type;
     private Course course;

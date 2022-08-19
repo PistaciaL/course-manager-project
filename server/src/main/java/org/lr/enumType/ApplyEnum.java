@@ -2,13 +2,14 @@ package org.lr.enumType;
 
 import com.baomidou.mybatisplus.annotation.IEnum;
 
-public enum CCTypeEnum implements IEnum<String> {
-        Chip("筹码选课"),
-        Grab("先到先得");
+public enum ApplyEnum implements IEnum<String> {
+        Supplementary("选课申请"),
+        Withdraw("退课申请"),
+        MarkChange("成绩申请");
 
         private String value;
 
-        CCTypeEnum(String value){
+        ApplyEnum(String value){
             this.value = value;
         }
 
@@ -19,6 +20,6 @@ public enum CCTypeEnum implements IEnum<String> {
 
         @Override
         public String toString() {
-            return this.getValue();
+                return this.getValue();
         }
-    }
+}

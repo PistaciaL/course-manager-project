@@ -15,7 +15,7 @@ public class WorkNumberService extends ServiceImpl<WorkNumberMapper, WorkNumber>
     @Autowired
     private WorkNumberMapper workNumberMapper;
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public WorkNumber getNotRegisterWorkNumber(RegisterVerifyDto dto){
         return workNumberMapper.getNotRegisterWorkNumber(dto);
     }

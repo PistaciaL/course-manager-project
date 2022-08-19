@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.lr.mapper.ApplyMapper">
+
+
+    <insert id="insertApply">
+        insert into apply (type, user_from, user_to, college_to, course_id, student_id, new_mark, content, create_time) VALUES
+        (#{type,typeHandler=org.lr.typeHandler.MyEnumTypeHandler}::apply_enum,#{userFrom.id},#{userTo.id},
+         #{collegeTo.id},#{course.id},#{student.id},#{newMark},#{content},#{createTime})
+    </insert>
+    <select id="selectNotHandlerApply" resultType="java.lang.Integer">
+        select count(*) from apply
+        where type = #{type,typeHandler=org.lr.typeHandler.MyEnumTypeHandler}::apply_enum
+        and user_from = #{applyUserId}
+        and course_id = #{CourseId}
+        and handle_time is null
+    </select>
+</mapper>

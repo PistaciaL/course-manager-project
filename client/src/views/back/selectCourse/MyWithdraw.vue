@@ -179,12 +179,12 @@ export default {
           courseId:id
         }
       }).then(res=>{
-        console.log(res.data.code)
         if(res.data.code==200){
           this.loadingWithdraw = false;
           this.successWithdraw();
           this.$router.go(0)
         } else {
+          this.withdrawForm.courseId=id
           this.withdrawFormShow = true;
           this.loadingWithdraw = false;
         }
@@ -203,9 +203,18 @@ export default {
       });
     },
     withdrawFormSubmit() {
-      //提交表单
+      this.axios({
+        method:'post',
+        url:'/apply/add',
+        data:{
+          type:'Withdraw',
+          courseId:this.withdrawForm.courseId,
+          content:this.withdrawForm.content
+        }
+      }).then(res=>{
+        this.successApplyWithdraw()
+      })
       this.withdrawFormShow = false
-      this.successApplyWithdraw()
     },
     changePage(newPage) {
       this.selectCourse(newPage)

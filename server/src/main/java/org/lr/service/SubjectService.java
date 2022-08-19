@@ -17,13 +17,14 @@ public class SubjectService extends ServiceImpl<SubjectMapper, Subject> {
     @Autowired
     private SubjectMapper subjectMapper;
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     public <E extends IPage<Subject>> E page(SearchSubjectDto dto){
         Page<Subject> page = new Page<>(dto.getPage(),dto.getPageSize());
         return subjectMapper.selectPage(page, dto);
     }
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public Subject selectById(Integer id){
-        return subjectMapper.selectById(id);
+        return subjectMapper.selectOneById(id);
     }
 }

@@ -6,10 +6,7 @@ import org.apache.commons.codec.binary.StringUtils;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedTypes;
-import org.lr.enumType.CCTypeEnum;
-import org.lr.enumType.IdentityEnum;
-import org.lr.enumType.NoticeEnum;
-import org.lr.enumType.PermissionEnum;
+import org.lr.enumType.*;
 import sun.util.resources.cldr.ps.CurrencyNames_ps;
 
 import java.lang.reflect.InvocationTargetException;
@@ -19,7 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Slf4j
-@MappedTypes(value = {CCTypeEnum.class, IdentityEnum.class, NoticeEnum.class, PermissionEnum.class})
+@MappedTypes(value = {CCTypeEnum.class, IdentityEnum.class, NoticeEnum.class, PermissionEnum.class, ApplyEnum.class})
 public class MyEnumTypeHandler extends BaseTypeHandler<IEnum> {
 
     private Class type;

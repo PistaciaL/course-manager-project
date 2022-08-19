@@ -35,4 +35,6 @@ public interface UserMapper extends BaseMapper<User> {
     List<UserSimpleVo> selectUserSimple(SearchPageSimpleDto dto);
 
     Integer selectUserSimpleCount(SearchPageSimpleDto dto);
+
+    List<String> selectCollegeManagerByCollegeId(Integer courseId);
 }

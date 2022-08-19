@@ -25,7 +25,7 @@ public class TermService extends ServiceImpl<TermMapper, Term> {
     @Autowired
     private RedisTemplate<String,Object> redisTemplate;
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public Page<Term> pageTerm(SearchPageSimpleDto dto) {
         JSONObject jsonObject = (JSONObject) redisTemplate.opsForValue().get(TERM_KEY_PREFIX + dto.toString());
         if(jsonObject!=null){

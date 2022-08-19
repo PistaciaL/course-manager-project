@@ -67,7 +67,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         return userMapper.updateAvatarByUserId(dto)==1;
     }
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public User selectById(Serializable id){
         return userMapper.selectById(id);
     }
@@ -94,7 +94,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         return i==1;
     }
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public PageInfoVo<UserSimpleVo> selectUserSimple(SearchPageSimpleDto dto){
         List<UserSimpleVo> list = userMapper.selectUserSimple(dto);
         Integer total = userMapper.selectUserSimpleCount(dto);
@@ -104,5 +104,10 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         Long totalPage = total%dto.getPageSize()==0?total/dto.getPageSize():total/dto.getPageSize()+1;
         vo.setTotalPage(totalPage);
         return vo;
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public List<String> selectCollegeManagerByCollegeId(Integer collegeId){
+        return userMapper.selectCollegeManagerByCollegeId(collegeId);
     }
 }

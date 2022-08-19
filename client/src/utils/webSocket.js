@@ -1,12 +1,22 @@
 import ElementUI from 'element-ui';
+import axios from 'axios';
 
 function initWebSocket(e) {
     const WS_API = "ws://localhost:8080/"
     const wsUri = WS_API + "noticeWebSocket/" + e;
     this.socket = new WebSocket(wsUri) //这里面的this都指向vue
+    this.socket.onopen = webSocketOnOpen;
     this.socket.onerror = webSocketOnError;
     this.socket.onmessage = webSocketOnMessage;
     this.socket.onclose = closeWebsocket;
+}
+
+function webSocketOnOpen(e) {
+    console.log("connect open")
+        // axios({
+        //     method:'get',
+        //     url:''
+        // })
 }
 
 function webSocketOnError(e) {

@@ -22,4 +22,10 @@ public enum NoticeEnum implements IEnum<String> {
         public String getValue() {
             return this.value;
         }
-    }
+
+
+        @Override
+        public String toString() {
+                return this.getValue();
+        }
+}

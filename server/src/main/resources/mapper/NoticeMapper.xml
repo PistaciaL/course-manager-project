@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.lr.mapper.NoticeMapper">
+    <resultMap id="NoticeVo" type="org.lr.vo.NoticeVo">
+        <id property="noticeId" column="n_id" javaType="Integer"/>
+        <result property="type" column="type" javaType="org.lr.enumType.NoticeEnum" typeHandler="org.lr.typeHandler.MyEnumTypeHandler"/>
+        <result property="courseId" column="c_id" javaType="Integer"/>
+        <result property="subjectName" column="s_name" javaType="String"/>
+        <result property="createTime" column="create_time" javaType="java.time.LocalDateTime"/>
+    </resultMap>
+
+    <insert id="insertNotices">
+        insert into notice (type, receive_user_id, create_time, course_id) values
+        <foreach collection="receiverId" item="id"  separator=",">
+            (#{type,typeHandler=org.lr.typeHandler.MyEnumTypeHandler}::notice_enum,#{id},#{createTime},#{courseId})
+        </foreach>
+    </insert>
+    <select id="selectPageNotice" resultMap="NoticeVo">
+        select n.notice_id as n_id , n.type , c.course_id as c_id , s.name as s_name , n.create_time from notice n
+            left join course c on c.course_id = n.course_id
+            left join subject s on c.subject_id = s.subject_id
+        where n.receive_user_id=#{receiverId}
+        order by n.is_read,n.create_time desc
+    </select>
+    <select id="countUnreadNotice" resultType="java.lang.Integer">
+        select count(*) from notice n where n.receive_user_id=#{userId} and n.is_read = false
+    </select>
+</mapper>

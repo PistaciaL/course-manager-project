@@ -15,10 +15,10 @@
         <el-dropdown @command="handleNoticeCommand" placement="bottom">
           <div class="operation-item-hover">
             <el-badge
-              :value="noticeNumb"
+              :value="unReadNoticeNumb"
               class="notice-dot"
               :max="99"
-              :hidden="noticeNumb == 0"
+              :hidden="unReadNoticeNumb == 0"
             >
               <i class="el-icon-bell notice-icon"></i>
             </el-badge>
@@ -26,13 +26,13 @@
           <el-dropdown-menu class="notice-dropdown-menu">
             <el-dropdown-item
               v-for="notice in notices"
-              :key="notice.id"
+              :key="notice.noticeId"
               class="primary-dropdown-item"
-              :command="notice.id"
+              :command="notice.noticeId"
             >
               <span class="el-icon-warning-outline">{{ notice.type }}</span
               ><el-divider direction="vertical"></el-divider
-              ><span>{{ notice.content }}</span>
+              ><span>{{ notice.subjectName }}</span>
             </el-dropdown-item>
             <el-dropdown-item
               divided
@@ -81,16 +81,35 @@ export default {
     return {
       mouseOver: "",
       noticeNumb: 100,
-      notices: [
-        { id: 1, type: "选课", content: "xxx希望选择您的xx课程" },
-        { id: 2, type: "退课", content: "xxx希望退选您的xx课程" },
-        { id: 3, type: "退课", content: "xxx希望退选您的xx课程" },
-        { id: 4, type: "选课", content: "xxx希望选择您的xx课程" },
-      ],
+      notices: [],
     };
   },
   mounted() {
     this.$webSocket.initWebSocket(this.userInfo("token"))
+    this.axios({
+      method:'get',
+      url:'/notice/search',
+      params:{
+        page:1,
+        pageSize:5
+      }
+    }).then(res=>{
+      this.notices=res.data.data.data
+      console.log(this.notices)
+    })
+    this.axios({
+      method:'get',
+      url:'/notice/count'
+    }).then(res=>{
+      if(res.data.code=200){
+        this.$store.state.unReadNoticeNumb=res.data.data
+      }
+    })
+  },
+  computed:{
+    unReadNoticeNumb(){
+      return this.$store.state.unReadNoticeNumb
+    }
   },
   methods: {
     userInfo(str) {

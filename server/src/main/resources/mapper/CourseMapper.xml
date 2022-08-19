@@ -141,4 +141,9 @@
         left join mark_model mm on mm.course_id = tb1.course_id
         left join mark_info mi on mi.student_id = #{studentId} and mi.mm_id = mm.mm_id
     </select>
+    <select id="selectBaseInfoById" resultType="org.lr.dto.CourseDto">
+        select course_id,subject_id,teacher_id,term_id,max_student,exist_student,mark_is_publish from course where course_id=#{id}
+    </select>
+
+
 </mapper>

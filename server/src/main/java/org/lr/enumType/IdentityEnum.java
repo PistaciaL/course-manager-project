@@ -16,5 +16,10 @@ public enum IdentityEnum implements IEnum<String> {
         return value;
     }
 
+    @Override
+    public String toString() {
+        return this.getValue();
+    }
+
 
 }

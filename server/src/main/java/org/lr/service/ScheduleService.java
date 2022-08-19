@@ -16,12 +16,12 @@ public class ScheduleService {
     @Autowired
     private ScheduleMapper scheduleMapper;
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public CourseScheduleVo searchCourseSchedule(Integer courseId){
         return scheduleMapper.searchCourseSchedule(courseId);
     }
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public LocalDate selectCourseFirstClass(Integer courseId){
         return scheduleMapper.selectCourseFirstClass(courseId);
     }
